@@ -13,6 +13,9 @@ class TTexts {
   static const String changePasswordSubTitle =
       "Vui lòng nhập mật khẩu mới của bạn.";
 
+  // CopyRight
+  static const String copyrightTitle = "Bản quyền © 2026 bởi BorisEdu";
+
   // Form Control Strings
   static const String sdt = "Số điện thoại";
   static const String password = "Mật khẩu";

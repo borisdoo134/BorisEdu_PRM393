@@ -1,37 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:myfschools/screens/forget_password/forget_password.dart';
-import 'package:myfschools/screens/home.dart';
+import 'package:myfschools/screens/login.dart';
 import 'package:myfschools/utils/constants/TTexts.dart';
 import 'package:myfschools/widgets/copyright_footer.dart';
 import 'package:myfschools/widgets/custom_label_field.dart';
 import 'package:myfschools/widgets/login_signup/form_header.dart';
 import 'package:myfschools/widgets/primary_button.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final _keyForm = GlobalKey<FormState>();
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _obscurePassword = true;
+  bool _obscureRePassword = true;
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _rePasswordController = TextEditingController();
+  final _keyForm = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFf0f0f0),
-
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
             child: ConstrainedBox(
-              // 2. Ép chiều cao tối thiểu bằng chiều cao màn hình
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              // 3. IntrinsicHeight giúp Column tính toán được khoảng trống cho Spacer
               child: IntrinsicHeight(
                 child: Padding(
                   padding: const EdgeInsets.only(
@@ -45,8 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       /// Header
                       FormHeader(
-                        title: TTexts.loginTitle,
-                        subTitle: TTexts.loginSubTitle,
+                        title: TTexts.changePasswordTitle,
+                        subTitle: TTexts.changePasswordSubTitle,
                       ),
 
                       const SizedBox(height: 32),
@@ -57,15 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            RegularInputField(
-                              label: TTexts.sdt,
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              validator: (value) =>
-                                  (value == null || value.isEmpty)
-                                  ? 'Vui lòng nhập số điện thoại!'
-                                  : null,
-                            ),
                             const SizedBox(height: 20),
 
                             PasswordInputField(
@@ -77,46 +65,54 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _obscurePassword = !_obscurePassword;
                                 });
                               },
-                              validator: (value) =>
-                                  (value == null || value.isEmpty)
-                                  ? 'Vui lòng nhập mật khẩu!'
-                                  : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Vui lòng nhập mật khẩu!';
+                                }
+                                return null;
+                              },
                             ),
+
                             const SizedBox(height: 8),
 
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ForgetPasswordScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    TTexts.forgetPassword,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium,
-                                  ),
-                                ),
-                              ],
+                            PasswordInputField(
+                              label: TTexts.rePassword,
+                              controller: _rePasswordController,
+                              obscureText: _obscureRePassword,
+                              onToggle: () {
+                                setState(() {
+                                  _obscureRePassword = !_obscureRePassword;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Vui lòng nhập lại mật khẩu!';
+                                }
+                                return null;
+                              },
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 35),
 
+                            /// Sign In Button
                             PrimaryButton(
-                              text: TTexts.signIn,
+                              text: TTexts.changePassword,
                               onPressed: () {
                                 if (_keyForm.currentState!.validate()) {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const HomeScreen(),
+                                      builder: (context) => const LoginScreen(),
+                                    ),
+                                  );
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Đổi mật khẩu thành công!'),
+                                      backgroundColor: Colors.green,
+                                      behavior: SnackBarBehavior.floating,
+                                      margin: EdgeInsets.all(10),
+                                      duration: Duration(seconds: 3),
                                     ),
                                   );
                                 }
