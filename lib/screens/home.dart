@@ -65,7 +65,13 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           /// 1. HEADER SECTION
-          HomeHeader(primaryColor: primaryColor),
+          HomeHeader(
+            primaryColor: primaryColor,
+            onTabChanged: (index) {
+              _pageController.jumpToPage(index);
+              _controller.jumpTo(index); // Update animated bottom notch bar
+            },
+          ),
 
           const SizedBox(height: 20),
 

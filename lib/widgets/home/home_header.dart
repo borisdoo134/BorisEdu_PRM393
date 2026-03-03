@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:myfschools/screens/profile/profile.dart';
 
 class HomeHeader extends StatelessWidget {
   final Color primaryColor;
+  final Function(int)? onTabChanged;
 
-  const HomeHeader({super.key, required this.primaryColor});
+  const HomeHeader({super.key, required this.primaryColor, this.onTabChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +28,26 @@ class HomeHeader extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundImage: AssetImage(
-                          'assets/avatars/phu_huynh.png',
+                      GestureDetector(
+                        onTap: () async {
+                          // Điều hướng sang màn hình ProfileScreen
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(),
+                            ),
+                          );
+                          
+                          // Nếu ProfileScreen trả về index (do user bấm bottom bar)
+                          if (result != null && result is int && onTabChanged != null) {
+                            onTabChanged!(result);
+                          }
+                        },
+                        child: const CircleAvatar(
+                          radius: 30,
+                          backgroundImage: AssetImage(
+                            'assets/avatars/phu_huynh.png',
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
