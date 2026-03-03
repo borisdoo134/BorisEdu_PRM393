@@ -1,6 +1,7 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
+import 'package:myfschools/widgets/weekly_timetable/weekly_timetable.dart';
 
 class WeeklyTimetableScreen extends StatefulWidget {
   const WeeklyTimetableScreen({super.key});
@@ -99,14 +100,18 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                   ),
                   DropdownButton<String>(
                     value: _selectedWeek,
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.black87,
+                    ),
                     elevation: 16,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade700,
                       fontWeight: FontWeight.w600,
                     ),
-                    underline: Container(), // Ẩn gạch chân
+                    underline: Container(),
+                    // Ẩn gạch chân
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
@@ -116,11 +121,12 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                     },
                     items: <String>['Tuần 41', 'Tuần 42', 'Tuần 43', 'Tuần 44']
                         .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        })
+                        .toList(),
                   ),
                 ],
               ),
@@ -128,7 +134,19 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
             const SizedBox(height: 20),
 
             // --- THANH CHỌN NGÀY ---
-            _buildDateSelector(),
+            WeeklyDateSelector(
+              weekDays: _weekDays,
+              onDayTapped: (index) {
+                setState(() {
+                  // Đặt lại tất cả thành false
+                  for (var element in _weekDays) {
+                    element['isActive'] = false;
+                  }
+                  // Đặt ngày hiện tại thành true
+                  _weekDays[index]['isActive'] = true;
+                });
+              },
+            ),
 
             const SizedBox(height: 10),
             const Divider(height: 1, thickness: 1, color: Colors.black12),
@@ -175,7 +193,7 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                 ),
                 itemCount: _dailyClasses.length,
                 itemBuilder: (context, index) {
-                  return _buildTimelineItem(_dailyClasses[index]);
+                  return WeeklyTimelineItem(classInfo: _dailyClasses[index]);
                 },
               ),
             ),
@@ -193,216 +211,4 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
       ),
     );
   }
-
-  // Widget Thanh ngày
-  Widget _buildDateSelector() {
-    return SizedBox(
-      height: 75,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        itemCount: _weekDays.length,
-        itemBuilder: (context, index) {
-          final day = _weekDays[index];
-          final isActive = day['isActive'] as bool;
-
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                // Đặt lại tất cả thành false
-                for (var element in _weekDays) {
-                  element['isActive'] = false;
-                }
-                // Đặt ngày hiện tại thành true
-                _weekDays[index]['isActive'] = true;
-              });
-            },
-            child: Container(
-              width: 55,
-              margin: const EdgeInsets.symmetric(horizontal: 6.0),
-              decoration: BoxDecoration(
-                color: isActive ? const Color(0xFFE8F5E9) : Colors.white,
-                // Nền xanh nhạt nếu active
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isActive
-                      ? Colors.green.withValues(alpha: 0.5)
-                      : Colors.grey.shade300,
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    day['day'],
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                      color: isActive ? Colors.green.shade800 : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    day['date'],
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Widget 1 Tiết học
-  Widget _buildTimelineItem(Map<String, dynamic> classInfo) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 1. Cột hiển thị giờ
-          SizedBox(
-            width: 45,
-            child: Column(
-              children: [
-                Text(
-                  classInfo['timeLabel'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    color: Colors.grey.shade400, // Thanh dọc kẻ ngang xuống
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 8),
-
-          // 2. Thẻ môn học bên phải
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                color: classInfo['color'], // Màu nền
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: classInfo['accentColor'].withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              // Dùng Row bọc lấy Dải Màu Bên Trái và phần Nội Dung
-              child: Row(
-                children: [
-                  Container(
-                    width: 7,
-                    color: classInfo['accentColor'],
-                  ),
-                  Expanded(
-                    child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 14.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Tên môn học
-                    Text(
-                      classInfo['subject'] ?? 'Môn học',
-                      // Thêm fallback text để test
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black, // Đảm bảo màu chữ là đen
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // 2. Địa điểm phòng
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: Colors.grey.shade700,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          classInfo['room'] ?? 'Phòng học',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 14),
-                    Divider(height: 1, color: Colors.black.withValues(alpha: 0.1)),
-                    const SizedBox(height: 12),
-
-                    // 3. Thời gian và Avatar
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Colors.black87,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              classInfo['timeRange'] ?? '00:00 - 00:00',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Avatar giả lập
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  ],
-),
-);
-}
 }
