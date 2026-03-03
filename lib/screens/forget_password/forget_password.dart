@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/forget_password/otp.dart';
 import 'package:myfschools/screens/login.dart';
-import 'package:myfschools/utils/constants/TTexts.dart';
+import 'package:myfschools/utils/constants/t_texts.dart';
 import 'package:myfschools/widgets/change_password/back_to_login.dart';
 import 'package:myfschools/widgets/copyright_footer.dart';
 import 'package:myfschools/widgets/custom_label_field.dart';

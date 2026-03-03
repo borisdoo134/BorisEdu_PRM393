@@ -1,5 +1,7 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:myfschools/screens/score_board.dart';
+import 'package:myfschools/screens/weekly_timetable.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/home/feature_new_section.dart';
 import 'package:myfschools/widgets/home/home_header.dart';
@@ -93,13 +95,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.calendar_month_outlined,
                       label: "Thời khóa biểu",
                       color: Colors.blue,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WeeklyTimetableScreen(),
+                          ),
+                        );
+                      },
                     ),
                     MenuCard(
                       icon: Icons.score,
                       label: "Bảng điểm",
                       color: Colors.orange,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ScoreBoardScreen(),
+                          ),
+                        );
+                      },
                     ),
                     MenuCard(
                       icon: Icons.edit_document,

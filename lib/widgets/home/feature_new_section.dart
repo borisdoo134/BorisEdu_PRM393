@@ -28,7 +28,7 @@ class FeaturedNewsSection extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   // Xử lý sự kiện khi bấm "Xem thêm"
-                  print("Đã bấm xem thêm tin tức");
+                  debugPrint("Đã bấm xem thêm tin tức");
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,

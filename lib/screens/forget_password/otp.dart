@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:myfschools/screens/forget_password/change-password.dart';
+import 'package:myfschools/screens/forget_password/change_password.dart';
 import 'package:myfschools/screens/login.dart';
-import 'package:myfschools/utils/constants/TTexts.dart';
+import 'package:myfschools/utils/constants/t_texts.dart';
 import 'package:myfschools/widgets/change_password/back_to_login.dart';
 import 'package:myfschools/widgets/copyright_footer.dart'; // Widget bản quyền (bạn tạo ở bước trước)
 import 'package:myfschools/widgets/login_signup/form_header.dart';
@@ -175,7 +175,7 @@ class _OTPScreenState extends State<OTPScreen> {
                           TextButton(
                             onPressed: _canResend
                                 ? () {
-                                    print("Đã gửi lại mã!");
+                                    debugPrint("Đã gửi lại mã!");
                                     startTimer();
                                   }
                                 : null,
@@ -209,7 +209,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
                           if (_keyForm.currentState!.validate()) {
                             setState(() => _hasError = false);
-                            print('Mã OTP là: ' + pin);
+                            debugPrint('Mã OTP là: $pin');
 
                             Navigator.push(
                               context,

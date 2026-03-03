@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myfschools/utils/constants/ImageString.dart';
+import 'package:myfschools/utils/constants/image_string.dart';
 
 class FormHeader extends StatelessWidget {
   const FormHeader({super.key, required this.title, required this.subTitle});

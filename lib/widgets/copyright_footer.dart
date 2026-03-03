@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myfschools/utils/constants/TTexts.dart';
+import 'package:myfschools/utils/constants/t_texts.dart';
 
 class CopyrightFooter extends StatelessWidget {
   final String text;

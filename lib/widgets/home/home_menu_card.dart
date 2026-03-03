@@ -32,7 +32,7 @@ class MenuCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          Container(
+          SizedBox(
             height: 50,
             child: Align(
               alignment: Alignment.topCenter,

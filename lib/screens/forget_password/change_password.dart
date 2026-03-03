@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/login.dart';
-import 'package:myfschools/utils/constants/TTexts.dart';
+import 'package:myfschools/utils/constants/t_texts.dart';
 import 'package:myfschools/widgets/copyright_footer.dart';
 import 'package:myfschools/widgets/custom_label_field.dart';
 import 'package:myfschools/widgets/login_signup/form_header.dart';
