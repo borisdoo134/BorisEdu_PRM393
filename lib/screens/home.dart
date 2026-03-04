@@ -1,5 +1,6 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:myfschools/screens/attendance_report/attendence_report.dart';
 import 'package:myfschools/screens/score_board.dart';
 import 'package:myfschools/screens/weekly_timetable.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
@@ -137,9 +138,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     MenuCard(
                       icon: Icons.group,
-                      label: "Câu lạc bộ",
+                      label: "Điểm danh",
                       color: Colors.teal,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AttendenceReportScreen(),
+                          ),
+                        );
+                      },
                     ),
                     MenuCard(
                       icon: Icons.payment,

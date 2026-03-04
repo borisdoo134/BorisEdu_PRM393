@@ -13,7 +13,7 @@ class ScoreBoardScreen extends StatefulWidget {
 class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   // --- DỮ LIỆU MÔ PHỎNG THEO ẢNH ---
   final List<String> _years = ['2020', '2021', '2022'];
-  final List<String> _semesters = ['1', '2'];
+  final List<String> _semesters = ['1', '2', 'Cả năm'];
 
   final List<SubjectItem> _subjects = [
     SubjectItem(
