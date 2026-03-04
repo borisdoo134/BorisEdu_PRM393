@@ -109,18 +109,70 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 20),
 
-                            PrimaryButton(
-                              text: TTexts.signIn,
-                              onPressed: () {
-                                if (_keyForm.currentState!.validate()) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const HomeScreen(),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: PrimaryButton(
+                                    text: TTexts.signIn,
+                                    trailingIcon: Icons.arrow_forward_ios,
+                                    onPressed: () {
+                                      if (_keyForm.currentState!.validate()) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const HomeScreen(),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Container(
+                                  width: 54,
+                                  height: 54,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Colors.grey.shade200,
                                     ),
-                                  );
-                                }
-                              },
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(16),
+                                      onTap: () {
+                                        // Xử lý đăng nhập bằng vân tay
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Chức năng đăng nhập vân tay đang phát triển',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: const Icon(
+                                        Icons.fingerprint,
+                                        color: Colors.green,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 30),
                           ],

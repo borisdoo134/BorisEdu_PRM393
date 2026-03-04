@@ -3,39 +3,44 @@ import 'package:flutter/material.dart';
 class PrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
-
-  // Bạn có thể thêm màu tùy chỉnh nếu muốn, nhưng mặc định là xanh
   final Color? backgroundColor;
+  final IconData? trailingIcon;
 
   const PrimaryButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.backgroundColor,
+    this.trailingIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity, // Nút luôn full chiều ngang
+      width: double.infinity,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? Colors.green[600],
-          // Mặc định xanh
           foregroundColor: Colors.white,
-          // Chữ trắng
-          padding: const EdgeInsets.all(15),
-          // Padding chuẩn
-          // Nếu muốn bo tròn giống TextFormField thì thêm dòng này:
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
-          elevation: 2, // Đổ bóng nhẹ cho đẹp
+          elevation: 0, 
         ),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              text,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (trailingIcon != null) ...[
+              const SizedBox(width: 8),
+              Icon(trailingIcon, size: 20),
+            ],
+          ],
         ),
       ),
     );

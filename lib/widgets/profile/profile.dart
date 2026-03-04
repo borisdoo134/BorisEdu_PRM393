@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/login.dart';
 
-class ProfileChildCard extends StatelessWidget {
+class ProfileChildCard extends StatefulWidget {
   final String name;
   final String subtitle;
   final String status;
@@ -16,67 +16,149 @@ class ProfileChildCard extends StatelessWidget {
   });
 
   @override
+  State<ProfileChildCard> createState() => _ProfileChildCardState();
+}
+
+class _ProfileChildCardState extends State<ProfileChildCard> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.shade200,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade300),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Image.asset(
-              avatarPath,
-              fit: BoxFit.cover,
-              errorBuilder: (ctx, _, stackTrace) => const Icon(Icons.person),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                Container(
+                  width: 50,
+                  height: 50,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey.shade200,
+                  ),
+                  child: Image.asset(
+                    widget.avatarPath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, _, stackTrace) =>
+                        const Icon(Icons.person),
                   ),
                 ),
-                const SizedBox(height: 4),
-                RichText(
-                  text: TextSpan(
-                    text: "$subtitle • ",
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(
-                        text: status,
+                      Text(
+                        widget.name,
                         style: const TextStyle(
-                          color: Colors.green,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      RichText(
+                        text: TextSpan(
+                          text: "${widget.subtitle} • ",
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade600),
+                          children: [
+                            TextSpan(
+                              text: widget.status,
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+                Icon(
+                  _isExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: Colors.grey.shade600,
+                ),
               ],
+            ),
+            if (_isExpanded) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F7F7),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  children: [
+                    _buildDetailRow("Họ và Tên :", widget.name),
+                    _buildDetailRow("Lớp :", widget.subtitle.split(' - ').first),
+                    _buildDetailRow("Ngày sinh :", "25/02/2026"),
+                    _buildDetailRow("Địa chỉ :", "Hà Nội"),
+                    _buildDetailRow("Giới tính :", "Nam"),
+                    _buildDetailRow("Số điện thoại:", "0123456789"),
+                    _buildDetailRow("Tên bố:", "abc"),
+                    _buildDetailRow("Tên mẹ:", "abc"),
+                    _buildDetailRow("Tình trạng:", widget.status),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
