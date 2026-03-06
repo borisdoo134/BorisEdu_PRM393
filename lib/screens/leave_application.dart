@@ -1,0 +1,70 @@
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:myfschools/widgets/bottom_bar.dart';
+import 'package:myfschools/widgets/leave_application/leave_form.dart';
+
+class LeaveApplicationScreen extends StatefulWidget {
+  const LeaveApplicationScreen({super.key});
+
+  @override
+  State<LeaveApplicationScreen> createState() => _LeaveApplicationScreenState();
+}
+
+class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
+  final NotchBottomBarController _controller = NotchBottomBarController(
+    index: 2,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFF43A047);
+
+    return Scaffold(
+      backgroundColor: primaryColor,
+      appBar: AppBar(
+        title: const Text(
+          "Xin Nghỉ Phép",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        backgroundColor: primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 24, bottom: 100), // Bottom padding for navbar
+          child: const LeaveApplicationForm(),
+        ),
+      ),
+      extendBody: true,
+      bottomNavigationBar: MovingBottomBar(
+        controller: _controller,
+        onTap: (index) {
+          if (index == 2) return;
+          Navigator.pop(context, index); 
+        },
+      ),
+    );
+  }
+}

@@ -2,6 +2,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/attendance_report/attendence_report.dart';
 import 'package:myfschools/screens/exam_schedule.dart';
+import 'package:myfschools/screens/leave_application.dart';
 import 'package:myfschools/screens/score_board.dart';
 import 'package:myfschools/screens/weekly_timetable.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
@@ -129,7 +130,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.edit_document,
                       label: "Xin nghỉ phép",
                       color: Colors.red,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LeaveApplicationScreen(),
+                          ),
+                        );
+                      },
                     ),
                     MenuCard(
                       icon: Icons.assessment_rounded,
