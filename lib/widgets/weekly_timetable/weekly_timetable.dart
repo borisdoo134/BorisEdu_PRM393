@@ -115,7 +115,7 @@ class WeeklyTimelineItem extends StatelessWidget {
                 color: classInfo['color'], // Màu nền
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: classInfo['accentColor'].withOpacity(0.3),
+                  color: classInfo['accentColor'].withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -168,7 +168,7 @@ class WeeklyTimelineItem extends StatelessWidget {
                           const SizedBox(height: 14),
                           Divider(
                             height: 1,
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                           ),
                           const SizedBox(height: 12),
 
