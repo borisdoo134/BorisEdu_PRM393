@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/profile/profile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,9 +16,37 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final Color primaryColor = const Color(0xFF43A047);
   bool _isBiometricEnabled = true;
+
+  String _parentName = "Đang tải...";
+  String _parentPhone = "Đang tải...";
+  List<dynamic> _students = [];
+
   final NotchBottomBarController _controller = NotchBottomBarController(
     index: 2,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _loadParentInfo();
+  }
+
+  Future<void> _loadParentInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _parentName = prefs.getString('USER_NAME') ?? "Phụ huynh";
+        _parentPhone = prefs.getString('USER_PHONE') ?? "Không có số điện thoại";
+        
+        final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
+        try {
+          _students = jsonDecode(studentsJson);
+        } catch (_) {
+          _students = [];
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -95,10 +126,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Row(
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                "Nguyễn Thị Hương",
-                                style: TextStyle(
+                                _parentName,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
@@ -122,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          "090***1234",
+                          _parentPhone,
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 14,
@@ -146,19 +177,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              ProfileChildCard(
-                name: "Trần Minh Anh",
-                subtitle: "Lớp 5A - TH Chu Văn An",
-                status: "Đang học",
-                avatarPath: 'assets/avatars/child.png',
-              ),
-              const SizedBox(height: 12),
-              ProfileChildCard(
-                name: "Trần Ngọc Bảo",
-                subtitle: "Lớp 2B - MN Hoa Hồng",
-                status: "Đang học",
-                avatarPath: 'assets/avatars/child.png',
-              ),
+              if (_students.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    "Không có dữ liệu học sinh",
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                )
+              else
+                ..._students.map((student) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: ProfileChildCard(student: student),
+                  );
+                }),
 
               const SizedBox(height: 30),
 

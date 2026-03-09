@@ -2,17 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:myfschools/screens/login.dart';
 
 class ProfileChildCard extends StatefulWidget {
-  final String name;
-  final String subtitle;
-  final String status;
-  final String avatarPath;
+  final Map<String, dynamic> student;
 
   const ProfileChildCard({
     super.key,
-    required this.name,
-    required this.subtitle,
-    required this.status,
-    required this.avatarPath,
+    required this.student,
   });
 
   @override
@@ -24,6 +18,41 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
 
   @override
   Widget build(BuildContext context) {
+    final student = widget.student;
+
+    final String firstName = student['firstName'] ?? '';
+    final String middleName = student['middleName'] ?? '';
+    final String lastName = student['lastName'] ?? '';
+    final String name = [firstName, middleName, lastName].where((e) => e.trim().isNotEmpty).join(' ').trim();
+    final String displayName = name.isEmpty ? "Chưa có tên" : name;
+
+    final String className = student['className'] ?? '';
+    final String schoolName = student['schoolName'] ?? '';
+    final String subtitle = "$className - $schoolName";
+    final String shortSubtitle = className;
+
+    final String rawStatus = student['status'] ?? '';
+    final String status = rawStatus == "LEARNING" ? "Đang học" : rawStatus;
+
+    final String avatarUrl = student['avatarUrl'] ?? '';
+
+    // Advanced details
+    final String dateOfBirth = student['dateOfBirth'] ?? '';
+    String formattedDob = dateOfBirth;
+    if (dateOfBirth.isNotEmpty) {
+      try {
+        final DateTime parsedDate = DateTime.parse(dateOfBirth);
+        formattedDob = "${parsedDate.day.toString().padLeft(2, '0')}/${parsedDate.month.toString().padLeft(2, '0')}/${parsedDate.year}";
+      } catch (_) {}
+    }
+
+    final String address = student['address'] ?? 'Không có';
+    final String rawGender = student['gender'] ?? '';
+    String gender = rawGender == 'MALE' ? 'Nam' : (rawGender == 'FEMALE' ? 'Nữ' : 'Khác');
+    final String phone = student['phone'] ?? 'Không có';
+    final String fatherName = student['fatherName'] ?? 'Không có';
+    final String motherName = student['motherName'] ?? 'Không có';
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -57,12 +86,19 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
                     shape: BoxShape.circle,
                     color: Colors.grey.shade200,
                   ),
-                  child: Image.asset(
-                    widget.avatarPath,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, _, stackTrace) =>
-                        const Icon(Icons.person),
-                  ),
+                  child: avatarUrl.isNotEmpty && avatarUrl.startsWith('http')
+                      ? Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, stackTrace) =>
+                              const Icon(Icons.person, color: Colors.grey),
+                        )
+                      : Image.asset(
+                          'assets/avatars/child.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, stackTrace) =>
+                              const Icon(Icons.person, color: Colors.grey),
+                        ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -70,7 +106,7 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.name,
+                        displayName,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -80,12 +116,12 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
-                          text: "${widget.subtitle} • ",
+                          text: "$subtitle • ",
                           style: TextStyle(
                               fontSize: 12, color: Colors.grey.shade600),
                           children: [
                             TextSpan(
-                              text: widget.status,
+                              text: status,
                               style: const TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold,
@@ -116,15 +152,15 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
                 ),
                 child: Column(
                   children: [
-                    _buildDetailRow("Họ và Tên :", widget.name),
-                    _buildDetailRow("Lớp :", widget.subtitle.split(' - ').first),
-                    _buildDetailRow("Ngày sinh :", "25/02/2026"),
-                    _buildDetailRow("Địa chỉ :", "Hà Nội"),
-                    _buildDetailRow("Giới tính :", "Nam"),
-                    _buildDetailRow("Số điện thoại:", "0123456789"),
-                    _buildDetailRow("Tên bố:", "abc"),
-                    _buildDetailRow("Tên mẹ:", "abc"),
-                    _buildDetailRow("Tình trạng:", widget.status),
+                    _buildDetailRow("Họ và Tên :", displayName),
+                    _buildDetailRow("Lớp :", shortSubtitle),
+                    _buildDetailRow("Ngày sinh :", formattedDob),
+                    _buildDetailRow("Địa chỉ :", address),
+                    _buildDetailRow("Giới tính :", gender),
+                    _buildDetailRow("Số điện thoại:", phone),
+                    _buildDetailRow("Tên bố:", fatherName),
+                    _buildDetailRow("Tên mẹ:", motherName),
+                    _buildDetailRow("Tình trạng:", status),
                   ],
                 ),
               ),

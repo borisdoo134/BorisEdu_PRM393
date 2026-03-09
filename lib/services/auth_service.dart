@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import thư vi�
 
 class AuthService {
   static String? userName;
+  static String? userPhone;
 
   static Future<bool> loginUser(String phone, String password) async {
     final String apiUrl = 'http://10.0.2.2:8386/api/v1/auth/login';
@@ -38,6 +39,7 @@ class AuthService {
           fullName = userData['username'] ?? '';
         }
         userName = fullName.isNotEmpty ? fullName : 'Phụ huynh';
+        userPhone = phone;
 
         // ==========================================
         // THỰC HIỆN LƯU TOKEN VÀO BỘ NHỚ MÁY
@@ -56,6 +58,11 @@ class AuthService {
 
         // Bạn cũng có thể lưu luôn tên để show ra màn hình Home
         await prefs.setString('USER_NAME', userName!);
+        await prefs.setString('USER_PHONE', phone);
+
+        // Lưu danh sách con (students)
+        final students = userData['students'] ?? [];
+        await prefs.setString('USER_STUDENTS', jsonEncode(students));
 
         print('Đã lưu Token vào SharedPreferences thành công!');
         return true;
@@ -114,7 +121,10 @@ class AuthService {
     await prefs.remove('ACCESS_TOKEN');
     await prefs.remove('REFRESH_TOKEN');
     await prefs.remove('USER_NAME');
+    await prefs.remove('USER_PHONE');
+    await prefs.remove('USER_STUDENTS');
     userName = null;
+    userPhone = null;
 
     print('Đã xóa sạch token ở bộ nhớ máy!');
   }

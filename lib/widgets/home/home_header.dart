@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/profile/profile.dart';
 import 'package:myfschools/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeHeader extends StatefulWidget {
   final Color primaryColor;
@@ -13,26 +16,46 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader> {
-  // Mock data for children
-  final List<Map<String, String>> _children = [
-    {
-      "name": "Boris Doo",
-      "class": "Lớp 12A9 - Trường THPT Hoằng Hóa II",
-      "avatar": "assets/avatars/child.png",
-    },
-    {
-      "name": "Cường Nè",
-      "class": "Lớp 10A1 - Trường THPT Hoằng Hóa II",
-      "avatar": "assets/avatars/child.png",
-    },
-  ];
-
-  late Map<String, String> _selectedChild;
+  List<Map<String, dynamic>> _students = [];
+  Map<String, dynamic>? _selectedChild;
 
   @override
   void initState() {
     super.initState();
-    _selectedChild = _children.first;
+    _loadStudents();
+  }
+
+  Future<void> _loadStudents() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
+        try {
+          final List<dynamic> rawStudents = jsonDecode(studentsJson);
+          _students = rawStudents.map((e) {
+            final String firstName = e['firstName'] ?? '';
+            final String middleName = e['middleName'] ?? '';
+            final String lastName = e['lastName'] ?? '';
+            final String name = [firstName, middleName, lastName].where((part) => part.trim().isNotEmpty).join(' ').trim();
+            final String className = e['className'] ?? '';
+            final String schoolName = e['schoolName'] ?? '';
+            
+            return {
+              "id": e['id'],
+              "name": name.isEmpty ? "Học sinh" : name,
+              "class": "$className - $schoolName",
+              "avatar": e['avatarUrl'] ?? "",
+            };
+          }).toList();
+
+          if (_students.isNotEmpty) {
+            _selectedChild = _students.first;
+          }
+        } catch (_) {
+          _students = [];
+        }
+      });
+    }
   }
 
   void _showChildSelector() {
@@ -57,20 +80,41 @@ class _HomeHeaderState extends State<HomeHeader> {
                   ),
                 ),
               ),
-              ..._children.map((child) {
-                final isSelected = child["name"] == _selectedChild["name"];
+              ..._students.map((child) {
+                final isSelected = child["id"] == _selectedChild?["id"];
+                final String avatarUrl = child["avatar"] ?? "";
+
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: AssetImage(child["avatar"]!),
+                    backgroundColor: Colors.grey.shade200,
+                    child: avatarUrl.isNotEmpty && avatarUrl.startsWith('http')
+                        ? ClipOval(
+                            child: Image.network(
+                              avatarUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, _, _) => const Icon(Icons.person, color: Colors.grey),
+                            ),
+                          )
+                        : ClipOval(
+                            child: Image.asset(
+                              'assets/avatars/child.png',
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, _, _) => const Icon(Icons.person, color: Colors.grey),
+                            ),
+                          ),
                   ),
                   title: Text(
-                    child["name"]!,
+                    child["name"] ?? "",
                     style: TextStyle(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? Colors.green : Colors.black87,
                     ),
                   ),
-                  subtitle: Text(child["class"]!),
+                  subtitle: Text(child["class"] ?? ""),
                   trailing: isSelected 
                       ? const Icon(Icons.check_circle, color: Colors.green) 
                       : null,
@@ -165,50 +209,73 @@ class _HomeHeaderState extends State<HomeHeader> {
           const SizedBox(height: 25),
 
           // Thẻ thông tin học sinh (Con cái)
-          GestureDetector(
-            onTap: _showChildSelector,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundImage: AssetImage(_selectedChild["avatar"]!),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _selectedChild["name"]!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          _selectedChild["class"]!,
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+          if (_selectedChild != null)
+            GestureDetector(
+              onTap: _showChildSelector,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.grey.shade200,
+                      child: _selectedChild!["avatar"] != null &&
+                              _selectedChild!["avatar"].toString().startsWith('http')
+                          ? ClipOval(
+                              child: Image.network(
+                                _selectedChild!["avatar"],
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, _, _) =>
+                                    const Icon(Icons.person, color: Colors.grey),
+                              ),
+                            )
+                          : ClipOval(
+                              child: Image.asset(
+                                'assets/avatars/child.png',
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, _, _) =>
+                                    const Icon(Icons.person, color: Colors.grey),
+                              ),
+                            ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.arrow_drop_down_circle_outlined,
-                    color: Colors.green,
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedChild!["name"] ?? "",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            _selectedChild!["class"] ?? "",
+                            style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.arrow_drop_down_circle_outlined,
+                      color: Colors.green,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
