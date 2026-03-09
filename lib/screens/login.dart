@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/forget_password/forget_password.dart';
 import 'package:myfschools/screens/home.dart';
+import 'package:myfschools/services/auth_service.dart';
 import 'package:myfschools/utils/constants/t_texts.dart';
 import 'package:myfschools/widgets/copyright_footer.dart';
 import 'package:myfschools/widgets/custom_label_field.dart';
@@ -115,15 +116,46 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: PrimaryButton(
                                     text: TTexts.signIn,
                                     trailingIcon: Icons.arrow_forward_ios,
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (_keyForm.currentState!.validate()) {
-                                        Navigator.push(
+                                        ScaffoldMessenger.of(
                                           context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const HomeScreen(),
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Đang đăng nhập...'),
                                           ),
                                         );
+
+                                        bool isSuccess =
+                                            await AuthService.loginUser(
+                                              _phoneController.text.trim(),
+                                              _passwordController.text,
+                                            );
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).hideCurrentSnackBar(); // Ẩn snackbar loading
+                                          if (isSuccess) {
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const HomeScreen(),
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Sai số điện thoại hoặc mật khẩu!',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }
                                       }
                                     },
                                   ),
