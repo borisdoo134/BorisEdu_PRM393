@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class ExamScheduleCard extends StatelessWidget {
   final String subjectName;
-  final bool isUpcoming;
+  final String status;
   final String examType;
   final String date;
   final String time;
@@ -11,7 +11,7 @@ class ExamScheduleCard extends StatelessWidget {
   const ExamScheduleCard({
     super.key,
     required this.subjectName,
-    this.isUpcoming = false,
+    required this.status,
     required this.examType,
     required this.date,
     required this.time,
@@ -51,19 +51,23 @@ class ExamScheduleCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isUpcoming)
+              if (status.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade50,
+                    color: status == "SẮP DIỄN RA" 
+                        ? Colors.green.shade50 
+                        : (status == "ĐÃ KẾT THÚC" ? Colors.grey.shade200 : Colors.orange.shade50),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    "SẮP DIỄN RA",
+                    status,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green.shade600,
+                      color: status == "SẮP DIỄN RA" 
+                          ? Colors.green.shade600 
+                          : (status == "ĐÃ KẾT THÚC" ? Colors.grey.shade700 : Colors.orange.shade600),
                     ),
                   ),
                 ),

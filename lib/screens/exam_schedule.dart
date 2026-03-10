@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/attendence_report/attendence_report.dart'; // For YearDropdown
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/exam_schedule/exam_schedule.dart'; // Custom widgets for exam schedule
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myfschools/models/exam_schedule/exam_schedule_model.dart';
+import 'package:myfschools/services/exam_schedule_service.dart';
 
 class ExamScheduleScreen extends StatefulWidget {
   const ExamScheduleScreen({super.key});
@@ -12,16 +15,65 @@ class ExamScheduleScreen extends StatefulWidget {
 }
 
 class _ExamScheduleScreenState extends State<ExamScheduleScreen> {
-  String _selectedYear = '2020';
-  final List<String> _years = ['2019', '2020', '2021', '2022'];
+  String _selectedYear = 'Tất cả';
+  final List<String> _years = ['Tất cả', '2023-2024', '2024-2025', '2025-2026', '2026-2027'];
   final NotchBottomBarController _controller = NotchBottomBarController(
     index: 2,
   );
+  
+  List<ExamScheduleModel> _schedules = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSchedules();
+  }
+
+  Future<void> _fetchSchedules() async {
+    setState(() => _isLoading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('SELECTED_STUDENT_ID');
+    if (studentId != null) {
+      final yearParam = _selectedYear == 'Tất cả' ? null : _selectedYear;
+      final result = await ExamScheduleService.getExamSchedules(
+        studentId, 
+        academicYear: yearParam,
+      );
+      if (mounted) {
+        setState(() {
+          _schedules = result;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  String _formatDate(String date) {
+    try {
+      final parts = date.split('-');
+      if (parts.length == 3) {
+        return "${parts[2]} / ${parts[1]} / ${parts[0]}";
+      }
+    } catch (_) {}
+    return date;
+  }
+
+  String _formatTime(String time) {
+    if (time.length >= 5) {
+      return time.substring(0, 5);
+    }
+    return time;
   }
 
   @override
@@ -67,6 +119,7 @@ class _ExamScheduleScreenState extends State<ExamScheduleScreen> {
                     setState(() {
                       _selectedYear = newValue;
                     });
+                    _fetchSchedules();
                   }
                 },
               ),
@@ -74,36 +127,28 @@ class _ExamScheduleScreenState extends State<ExamScheduleScreen> {
 
               // Exam List
               Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  children: const [
-                    ExamScheduleCard(
-                      subjectName: "Tiếng Anh",
-                      isUpcoming: true,
-                      examType: "Kiểm tra cuối",
-                      date: "06 / 03 /2026",
-                      time: "9:00 - 9:45",
-                      location: "Delta, Phòng 403",
-                    ),
-                    ExamScheduleCard(
-                      subjectName: "Toán Học",
-                      isUpcoming: false,
-                      examType: "Kiểm tra cuối",
-                      date: "06 / 04 /2026",
-                      time: "9:00 - 9:45",
-                      location: "Delta, Phòng 403",
-                    ),
-                    ExamScheduleCard(
-                      subjectName: "Ngữ Văn",
-                      isUpcoming: false,
-                      examType: "Kiểm tra cuối",
-                      date: "06 / 04 /2026",
-                      time: "9:00 - 9:45",
-                      location: "Delta, Phòng 403",
-                    ),
-                    SizedBox(height: 100), // padding for bottom nav bar
-                  ],
-                ),
+                child: _isLoading 
+                    ? const Center(child: CircularProgressIndicator(color: Colors.green))
+                    : _schedules.isEmpty
+                        ? const Center(child: Text('Không có lịch thi nào', style: TextStyle(color: Colors.grey)))
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: _schedules.length + 1, // +1 for the bottom padding
+                            itemBuilder: (context, index) {
+                              if (index == _schedules.length) {
+                                return const SizedBox(height: 100); // padding for bottom nav bar
+                              }
+                              final schedule = _schedules[index];
+                              return ExamScheduleCard(
+                                subjectName: schedule.subjectName,
+                                status: schedule.status,
+                                examType: schedule.examType,
+                                date: _formatDate(schedule.examDate),
+                                time: "${_formatTime(schedule.startTime)} - ${_formatTime(schedule.endTime)}", 
+                                location: schedule.room,
+                              );
+                            },
+                          ),
               ),
             ],
           ),
