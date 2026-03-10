@@ -19,6 +19,7 @@ class _HomeHeaderState extends State<HomeHeader> {
   List<StudentModel> _students = [];
   StudentModel? _selectedChild;
   String _parentName = "Phụ huynh";
+  String _parentAvatar = "";
 
   @override
   void initState() {
@@ -31,13 +32,23 @@ class _HomeHeaderState extends State<HomeHeader> {
     if (mounted) {
       setState(() {
         _parentName = prefs.getString('USER_NAME') ?? "Phụ huynh";
+        _parentAvatar = prefs.getString('USER_AVATAR') ?? "";
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
           final List<dynamic> rawStudents = jsonDecode(studentsJson);
           _students = rawStudents.map((e) => StudentModel.fromJson(e)).toList();
 
           if (_students.isNotEmpty) {
-            _selectedChild = _students.first;
+            String? savedId = prefs.getString('SELECTED_STUDENT_ID');
+            if (savedId != null) {
+              _selectedChild = _students.firstWhere(
+                (s) => s.id == savedId, 
+                orElse: () => _students.first
+              );
+            } else {
+              _selectedChild = _students.first;
+              prefs.setString('SELECTED_STUDENT_ID', _selectedChild!.id);
+            }
           }
         } catch (_) {
           _students = [];
@@ -106,11 +117,15 @@ class _HomeHeaderState extends State<HomeHeader> {
                   trailing: isSelected 
                       ? const Icon(Icons.check_circle, color: Colors.green) 
                       : null,
-                  onTap: () {
+                  onTap: () async {
                     setState(() {
                       _selectedChild = child;
                     });
-                    Navigator.pop(context);
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('SELECTED_STUDENT_ID', child.id);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   },
                 );
               }),
@@ -158,11 +173,22 @@ class _HomeHeaderState extends State<HomeHeader> {
                             widget.onTabChanged!(result);
                           }
                         },
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 30,
-                          backgroundImage: AssetImage(
-                            'assets/avatars/phu_huynh.png',
-                          ),
+                          backgroundColor: Colors.grey.shade200,
+                          child: _parentAvatar.isNotEmpty && _parentAvatar.startsWith('http')
+                              ? ClipOval(
+                                  child: Image.network(
+                                    _parentAvatar,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Image.asset('assets/avatars/phu_huynh.png', width: 60, height: 60, fit: BoxFit.cover),
+                                  ),
+                                )
+                              : ClipOval(
+                                  child: Image.asset('assets/avatars/phu_huynh.png', width: 60, height: 60, fit: BoxFit.cover),
+                                ),
                         ),
                       ),
                       const SizedBox(width: 12),

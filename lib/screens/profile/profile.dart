@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _parentName = "Đang tải...";
   String _parentPhone = "Đang tải...";
+  String _parentAvatar = "";
   List<StudentModel> _students = [];
 
   final NotchBottomBarController _controller = NotchBottomBarController(
@@ -38,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _parentName = prefs.getString('USER_NAME') ?? "Phụ huynh";
         _parentPhone = prefs.getString('USER_PHONE') ?? "Không có số điện thoại";
+        _parentAvatar = prefs.getString('USER_AVATAR') ?? "";
         
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
@@ -103,10 +105,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       alignment: Alignment.bottomCenter,
                       children: [
                         Positioned.fill(
-                          child: Image.asset(
-                            'assets/avatars/phu_huynh.png',
-                            fit: BoxFit.cover,
-                          ),
+                          child: _parentAvatar.isNotEmpty && _parentAvatar.startsWith('http')
+                              ? Image.network(
+                                  _parentAvatar,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Image.asset(
+                                    'assets/avatars/phu_huynh.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Image.asset(
+                                  'assets/avatars/phu_huynh.png',
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                         Container(
                           width: double.infinity,

@@ -45,6 +45,7 @@ class AuthController {
 
           await prefs.setString('USER_NAME', currentUser!.fullName);
           await prefs.setString('USER_PHONE', phone);
+          await prefs.setString('USER_AVATAR', currentUser!.avatarUrl);
 
           // Lưu danh sách con ra List<StudentModel>
           final studentsJson = userData['students'] as List? ?? [];
@@ -92,6 +93,7 @@ class AuthController {
     await prefs.remove('REFRESH_TOKEN');
     await prefs.remove('USER_NAME');
     await prefs.remove('USER_PHONE');
+    await prefs.remove('USER_AVATAR');
     await prefs.remove('USER_STUDENTS');
     currentUser = null;
     userStudents.clear();

@@ -195,18 +195,37 @@ class WeeklyTimelineItem extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              // Avatar giả lập
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.grey,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 20,
-                                  color: Colors.white,
-                                ),
+                              // Avatar giáo viên
+                              Row(
+                                children: [
+                                  if (classInfo.teacherName.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8.0),
+                                      child: Text(
+                                        classInfo.teacherName,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey.shade800,
+                                        ),
+                                      ),
+                                    ),
+                                  CircleAvatar(
+                                    radius: 14,
+                                    backgroundColor: Colors.grey.shade400,
+                                    child: classInfo.teacherAvatar.isNotEmpty && classInfo.teacherAvatar.startsWith('http')
+                                      ? ClipOval(
+                                          child: Image.network(
+                                            classInfo.teacherAvatar,
+                                            width: 28,
+                                            height: 28,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (ctx, err, stackTrace) => const Icon(Icons.person, size: 18, color: Colors.white),
+                                          ),
+                                        )
+                                      : const Icon(Icons.person, size: 18, color: Colors.white),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

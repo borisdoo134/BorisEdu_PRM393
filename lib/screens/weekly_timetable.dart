@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/weekly_timetable/weekly_timetable.dart';
 import 'package:myfschools/models/academic/timetable_model.dart';
+import 'package:myfschools/controllers/academic/schedule_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WeeklyTimetableScreen extends StatefulWidget {
   const WeeklyTimetableScreen({super.key});
@@ -29,33 +31,49 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
     WeekDayModel(dayName: 'SUN', date: '18', isActive: false),
   ];
 
-  // Danh sách các môn học trong ngày (giả lập giống ảnh thiết kế)
-  final List<TimetableModel> _dailyClasses = [
-    TimetableModel(
-      timeLabel: '7:00',
-      subject: 'Toán Học',
-      room: 'Delta, Phòng 403',
-      timeRange: '7:00 - 7:45',
-      backgroundColor: const Color(0xFFE8F5E9), // Nền xanh lá nhạt
-      accentColor: const Color(0xFF4CAF50), // Border xanh lá nhạt
-    ),
-    TimetableModel(
-      timeLabel: '8:00',
-      subject: 'Toán Học',
-      room: 'Delta, Phòng 403',
-      timeRange: '8:00 - 8:45',
-      backgroundColor: const Color(0xFFE1F5FE), // Nền xanh dương nhạt
-      accentColor: const Color(0xFF03A9F4), // Border xanh dương nhạt
-    ),
-    TimetableModel(
-      timeLabel: '9:00',
-      subject: 'Toán Học',
-      room: 'Delta, Phòng 403',
-      timeRange: '9:00 - 9:45',
-      backgroundColor: const Color(0xFFFFF3E0), // Nền cam nhạt
-      accentColor: const Color(0xFFFF9800), // Border cam nhạt
-    ),
-  ];
+  List<TimetableModel> _fullSchedule = [];
+  List<TimetableModel> _dailyClasses = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTimetable();
+  }
+
+  Future<void> _loadTimetable() async {
+    setState(() => _isLoading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('SELECTED_STUDENT_ID');
+    
+    if (studentId != null) {
+      _fullSchedule = await ScheduleController.getTimetableByStudentId(studentId);
+    }
+    
+    _filterClassesForActiveDay();
+    setState(() => _isLoading = false);
+  }
+
+  void _filterClassesForActiveDay() {
+    final activeDay = _weekDays.firstWhere(
+      (d) => d.isActive, 
+      orElse: () => _weekDays[1],
+    ); 
+
+    final Map<String, String> dayNamesMap = {
+      'MON': 'MONDAY',
+      'TUE': 'TUESDAY',
+      'WED': 'WEDNESDAY',
+      'THU': 'THURSDAY',
+      'FRI': 'FRIDAY',
+      'SAT': 'SATURDAY',
+      'SUN': 'SUNDAY',
+    };
+    
+    String beDayName = dayNamesMap[activeDay.dayName] ?? '';
+    _dailyClasses = _fullSchedule.where((s) => s.dayOfWeek == beDayName).toList();
+    _dailyClasses.sort((a, b) => a.timeLabel.compareTo(b.timeLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +163,7 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                   }
                   // Đặt ngày hiện tại thành true
                   _weekDays[index].isActive = true;
+                  _filterClassesForActiveDay();
                 });
               },
             ),
@@ -185,18 +204,34 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
 
             // --- TIMELINE LỚP HỌC ---
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(
-                  left: 20,
-                  right: 24,
-                  bottom: 20,
-                  top: 10,
-                ),
-                itemCount: _dailyClasses.length,
-                itemBuilder: (context, index) {
-                  return WeeklyTimelineItem(classInfo: _dailyClasses[index]);
-                },
-              ),
+              child: _isLoading 
+                ? const Center(child: CircularProgressIndicator())
+                : _dailyClasses.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.calendar_today, size: 50, color: Colors.grey.shade400),
+                          const SizedBox(height: 10),
+                          Text(
+                            "Không có lịch học",
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                          )
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 24,
+                        bottom: 20,
+                        top: 10,
+                      ),
+                      itemCount: _dailyClasses.length,
+                      itemBuilder: (context, index) {
+                        return WeeklyTimelineItem(classInfo: _dailyClasses[index]);
+                      },
+                    ),
             ),
           ],
         ),
