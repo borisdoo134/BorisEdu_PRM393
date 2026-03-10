@@ -1,8 +1,12 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myfschools/models/attendance/attendance_detail_model.dart';
+import 'package:myfschools/services/attendance_service.dart';
 
 class AttendenceDetailScreen extends StatefulWidget {
+  final int subjectId;
   final String subjectName;
   final String className;
   final int present;
@@ -10,6 +14,7 @@ class AttendenceDetailScreen extends StatefulWidget {
 
   const AttendenceDetailScreen({
     super.key,
+    required this.subjectId,
     required this.subjectName,
     required this.className,
     required this.present,
@@ -25,10 +30,48 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
     index: 2,
   );
 
+  bool _isLoading = true;
+  AttendanceDetailResponse? _detailData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDetail();
+  }
+
+  Future<void> _fetchDetail() async {
+    setState(() => _isLoading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('SELECTED_STUDENT_ID');
+    if (studentId != null) {
+      final result = await AttendanceService.getAttendanceDetail(studentId, widget.subjectId);
+      if (mounted) {
+        setState(() {
+          _detailData = result;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  String _formatDate(String date) {
+    try {
+      final parts = date.split('-');
+      if (parts.length == 3) {
+        return "${parts[2]}/${parts[1]}/${parts[0]}";
+      }
+    } catch (_) {}
+    return date;
   }
 
   @override
@@ -61,52 +104,49 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
           color: Color(0xFFF5F5F5),
           borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 24, bottom: 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Card
-              _buildSummaryCard(),
-              const SizedBox(height: 20),
-              // Title Chi tiết
-              const Text(
-                "Chi tiết",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // List of attendance records
-              _buildAttendanceItem(
-                date: "13/04/2004",
-                teacher: "AnhNN59",
-                session: "Tiết 1",
-                isPresent: true,
-              ),
-              _buildAttendanceItem(
-                date: "14/04/2004",
-                teacher: "AnhNN59",
-                session: "Tiết 1",
-                isPresent: false,
-              ),
-              _buildAttendanceItem(
-                date: "15/04/2004",
-                teacher: "AnhNN59",
-                session: "Tiết 1",
-                isPresent: true,
-              ),
-              _buildAttendanceItem(
-                date: "16/04/2004",
-                teacher: "AnhNN59",
-                session: "Tiết 1",
-                isPresent: true,
-              ),
-            ],
-          ),
-        ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.green))
+            : _detailData == null
+                ? const Center(child: Text("Không tải được dữ liệu", style: TextStyle(color: Colors.grey)))
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.only(left: 20, right: 20, top: 24, bottom: 100),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Top Card
+                        _buildSummaryCard(),
+                        const SizedBox(height: 20),
+                        // Title Chi tiết
+                        const Text(
+                          "Chi tiết",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // List of attendance records
+                        if (_detailData!.records.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Text(
+                                "Không có bản ghi điểm danh nào.",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          )
+                        else
+                          ..._detailData!.records.map((record) => _buildAttendanceItem(
+                                date: _formatDate(record.date),
+                                teacher: record.teacherName,
+                                session: "Tiết ${record.period}",
+                                isPresent: record.status == "PRESENT",
+                              )),
+                      ],
+                    ),
+                  ),
       ),
       extendBody: true,
       bottomNavigationBar: MovingBottomBar(
@@ -120,8 +160,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
   }
 
   Widget _buildSummaryCard() {
-    double percentage = widget.total > 0 ? widget.present / widget.total : 0;
-    int percentageInt = (percentage * 100).round();
+    int percentageInt = _detailData!.percentage;
 
     return Container(
       decoration: BoxDecoration(
@@ -140,7 +179,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.subjectName,
+            _detailData!.subjectName,
             style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
@@ -158,7 +197,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
                   fit: StackFit.expand,
                   children: [
                     CircularProgressIndicator(
-                      value: percentage,
+                      value: percentageInt / 100,
                       backgroundColor: Colors.grey.shade200,
                       color: Colors.greenAccent.shade400,
                       strokeWidth: 6,
@@ -190,8 +229,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
                           text: TextSpan(
                             style: const TextStyle(fontSize: 14, color: Colors.black87),
                             children: [
-                              const TextSpan(text: "Lớp: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                              TextSpan(text: widget.className, style: TextStyle(color: Colors.grey.shade600)),
+                              TextSpan(text: _detailData!.className, style: TextStyle(color: Colors.grey.shade600)),
                             ],
                           ),
                         ),
@@ -215,11 +253,11 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "${widget.present} ",
+                              text: "${_detailData!.presentCount} ",
                               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
                             ),
                             TextSpan(
-                              text: "/ ${widget.total} Tiết",
+                              text: "/ ${_detailData!.presentCount + _detailData!.absentCount} Tiết",
                               style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                             ),
                           ],
@@ -236,9 +274,9 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatBox(widget.present.toString(), "Có mặt", Colors.green),
-              _buildStatBox((widget.total - widget.present).toString(), "Vắng mặt", Colors.red),
-              _buildStatBox("15", "Tương lai", Colors.black87),
+              _buildStatBox(_detailData!.presentCount.toString(), "Có mặt", Colors.green),
+              _buildStatBox(_detailData!.absentCount.toString(), "Vắng mặt", Colors.red),
+              _buildStatBox(_detailData!.futureCount.toString(), "Tương lai", Colors.black87),
             ],
           ),
         ],

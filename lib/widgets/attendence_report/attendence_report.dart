@@ -93,7 +93,7 @@ class SubjectAttendanceCard extends StatelessWidget {
                     Icon(Icons.menu_book, size: 16, color: Colors.blue.shade300),
                     const SizedBox(width: 8),
                     Text(
-                      "Lớp: $className",
+                      className,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/attendence_report/attendence_report.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'attendence_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myfschools/models/attendance/attendance_overview_model.dart';
+import 'package:myfschools/services/attendance_service.dart';
 
 class AttendenceReportScreen extends StatefulWidget {
   const AttendenceReportScreen({super.key});
@@ -12,11 +15,39 @@ class AttendenceReportScreen extends StatefulWidget {
 }
 
 class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
-  String _selectedYear = '2020';
-  final List<String> _years = ['2019', '2020', '2021', '2022'];
+  String _selectedYear = 'Tất cả';
+  final List<String> _years = ['Tất cả', '2023-2024', '2024-2025', '2025-2026', '2026-2027'];
   final NotchBottomBarController _controller = NotchBottomBarController(
     index: 2,
   );
+  
+  List<AttendanceOverviewModel> _attendances = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAttendances();
+  }
+
+  Future<void> _fetchAttendances() async {
+    setState(() => _isLoading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('SELECTED_STUDENT_ID');
+    if (studentId != null) {
+      final result = await AttendanceService.getAttendanceOverview(studentId);
+      if (mounted) {
+        setState(() {
+          _attendances = result;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -24,26 +55,27 @@ class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
     super.dispose();
   }
 
-  Widget _buildCard(String subjectName, String className, int present, int total) {
+  Widget _buildCard(AttendanceOverviewModel model) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => AttendenceDetailScreen(
-              subjectName: subjectName,
-              className: className,
-              present: present,
-              total: total,
+              subjectId: model.subjectId,
+              subjectName: model.subjectName,
+              className: model.className,
+              present: model.presentCount,
+              total: model.totalConducted,
             ),
           ),
         );
       },
       child: SubjectAttendanceCard(
-        subjectName: subjectName,
-        className: className,
-        present: present,
-        total: total,
+        subjectName: model.subjectName,
+        className: model.className,
+        present: model.presentCount,
+        total: model.totalConducted,
       ),
     );
   }
@@ -98,17 +130,20 @@ class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
 
               // Subject List
               Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  children: [
-                    _buildCard("Toán Học", "12A9", 25, 25), // Updated to match image data
-                    _buildCard("Ngữ Văn", "12A9", 13, 26),
-                    _buildCard("Tiếng Anh", "12A9", 26, 26),
-                    _buildCard("Thể Dục", "12A9", 22, 26),
-                    _buildCard("Vật Lý", "12A9", 24, 26),
-                    const SizedBox(height: 100), 
-                  ],
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: Colors.green))
+                    : _attendances.isEmpty
+                        ? const Center(child: Text('Không có dữ liệu điểm danh', style: TextStyle(color: Colors.grey)))
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: _attendances.length + 1, // +1 for the bottom padding
+                            itemBuilder: (context, index) {
+                              if (index == _attendances.length) {
+                                return const SizedBox(height: 100); // padding for bottom nav bar
+                              }
+                              return _buildCard(_attendances[index]);
+                            },
+                          ),
               ),
             ],
           ),
