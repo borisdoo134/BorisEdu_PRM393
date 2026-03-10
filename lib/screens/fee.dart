@@ -75,7 +75,7 @@ class _FeeScreenState extends State<FeeScreen> {
               const SizedBox(height: 32),
 
               // Fee Details
-              const FeeDetailList(),
+              FeeDetailList(),
             ],
           ),
         ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/login.dart';
+import 'package:myfschools/models/student/student_model.dart';
 
 class ProfileChildCard extends StatefulWidget {
-  final Map<String, dynamic> student;
+  final StudentModel student;
 
   const ProfileChildCard({
     super.key,
@@ -20,38 +21,20 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
   Widget build(BuildContext context) {
     final student = widget.student;
 
-    final String firstName = student['firstName'] ?? '';
-    final String middleName = student['middleName'] ?? '';
-    final String lastName = student['lastName'] ?? '';
-    final String name = [firstName, middleName, lastName].where((e) => e.trim().isNotEmpty).join(' ').trim();
-    final String displayName = name.isEmpty ? "Chưa có tên" : name;
+    final String displayName = student.fullName;
+    final String shortSubtitle = student.className;
+    final String subtitle = "${student.className} - ${student.schoolName}";
 
-    final String className = student['className'] ?? '';
-    final String schoolName = student['schoolName'] ?? '';
-    final String subtitle = "$className - $schoolName";
-    final String shortSubtitle = className;
-
-    final String rawStatus = student['status'] ?? '';
-    final String status = rawStatus == "LEARNING" ? "Đang học" : rawStatus;
-
-    final String avatarUrl = student['avatarUrl'] ?? '';
+    final String status = student.displayStatus;
+    final String avatarUrl = student.avatarUrl;
 
     // Advanced details
-    final String dateOfBirth = student['dateOfBirth'] ?? '';
-    String formattedDob = dateOfBirth;
-    if (dateOfBirth.isNotEmpty) {
-      try {
-        final DateTime parsedDate = DateTime.parse(dateOfBirth);
-        formattedDob = "${parsedDate.day.toString().padLeft(2, '0')}/${parsedDate.month.toString().padLeft(2, '0')}/${parsedDate.year}";
-      } catch (_) {}
-    }
-
-    final String address = student['address'] ?? 'Không có';
-    final String rawGender = student['gender'] ?? '';
-    String gender = rawGender == 'MALE' ? 'Nam' : (rawGender == 'FEMALE' ? 'Nữ' : 'Khác');
-    final String phone = student['phone'] ?? 'Không có';
-    final String fatherName = student['fatherName'] ?? 'Không có';
-    final String motherName = student['motherName'] ?? 'Không có';
+    final String formattedDob = student.formattedDateOfBirth;
+    final String address = student.address.isEmpty ? 'Không có' : student.address;
+    final String gender = student.displayGender;
+    final String phone = student.phone.isEmpty ? 'Không có' : student.phone;
+    final String fatherName = student.fatherName.isEmpty ? 'Không có' : student.fatherName;
+    final String motherName = student.motherName.isEmpty ? 'Không có' : student.motherName;
 
     return GestureDetector(
       onTap: () {

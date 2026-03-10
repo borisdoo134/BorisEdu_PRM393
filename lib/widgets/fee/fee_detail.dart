@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:myfschools/models/fee/fee_model.dart';
 
 class FeeDetailList extends StatelessWidget {
-  const FeeDetailList({super.key});
+  final List<FeeModel> fees = [
+    FeeModel(title: "Học phí kỳ 1", subtitle: "Tháng 09/2023", amount: "12.500.000đ"),
+    FeeModel(title: "Tiền ăn bán trú", subtitle: "Tháng 09/2023", amount: "1.200.000đ"),
+    FeeModel(title: "Phí xe buýt", subtitle: "Tháng 10/2023", amount: "850.000đ"),
+    FeeModel(title: "Đồng phục hè", subtitle: "Đăng ký mới", amount: "450.000đ"),
+  ];
+
+  FeeDetailList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +66,7 @@ class FeeDetailList extends StatelessWidget {
               const Divider(height: 1, color: Colors.white, thickness: 2),
 
               // Items
-              _buildFeeItem("Học phí kỳ 1", "Tháng 09/2023", "12.500.000đ"),
-              _buildFeeItem("Tiền ăn bán trú", "Tháng 09/2023", "1.200.000đ"),
-              _buildFeeItem("Phí xe buýt", "Tháng 10/2023", "850.000đ"),
-              _buildFeeItem("Đồng phục hè", "Đăng ký mới", "450.000đ"),
+              ...fees.map((fee) => _buildFeeItem(fee.title, fee.subtitle, fee.amount)),
 
               // Total section
               Container(

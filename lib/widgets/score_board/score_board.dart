@@ -1,27 +1,9 @@
 import 'package:flutter/material.dart';
-
-// --- MODEL ---
-class SubjectItem {
-  final String id;
-  final String name;
-  final IconData icon;
-  final Color iconColor;
-  final double? averageScore;
-  final String className;
-
-  SubjectItem({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.iconColor,
-    this.averageScore,
-    required this.className,
-  });
-}
+import 'package:myfschools/models/academic/score_model.dart';
 
 // Widget xây dựng thẻ môn học
 class SubjectCardWidget extends StatelessWidget {
-  final SubjectItem subject;
+  final ScoreModel subject;
 
   const SubjectCardWidget({super.key, required this.subject});
 

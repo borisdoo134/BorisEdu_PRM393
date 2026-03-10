@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:myfschools/models/academic/timetable_model.dart';
 
 // Widget Thanh ngày
 class WeeklyDateSelector extends StatelessWidget {
-  final List<Map<String, dynamic>> weekDays;
+  final List<WeekDayModel> weekDays;
   final Function(int) onDayTapped;
 
   const WeeklyDateSelector({
@@ -21,7 +22,7 @@ class WeeklyDateSelector extends StatelessWidget {
         itemCount: weekDays.length,
         itemBuilder: (context, index) {
           final day = weekDays[index];
-          final isActive = day['isActive'] as bool;
+          final isActive = day.isActive;
 
           return GestureDetector(
             onTap: () => onDayTapped(index),
@@ -42,7 +43,7 @@ class WeeklyDateSelector extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    day['day'],
+                    day.dayName,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
@@ -51,7 +52,7 @@ class WeeklyDateSelector extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    day['date'],
+                    day.date,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -70,7 +71,7 @@ class WeeklyDateSelector extends StatelessWidget {
 
 // Widget 1 Tiết học
 class WeeklyTimelineItem extends StatelessWidget {
-  final Map<String, dynamic> classInfo;
+  final TimetableModel classInfo;
 
   const WeeklyTimelineItem({super.key, required this.classInfo});
 
@@ -86,7 +87,7 @@ class WeeklyTimelineItem extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  classInfo['timeLabel'],
+                  classInfo.timeLabel,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
@@ -112,10 +113,10 @@ class WeeklyTimelineItem extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 24),
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                color: classInfo['color'], // Màu nền
+                color: classInfo.backgroundColor, // Màu nền
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: classInfo['accentColor'].withValues(alpha: 0.3),
+                  color: classInfo.accentColor.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -124,7 +125,7 @@ class WeeklyTimelineItem extends StatelessWidget {
                 children: [
                   Container(
                     width: 7,
-                    color: classInfo['accentColor'],
+                    color: classInfo.accentColor,
                   ),
                   Expanded(
                     child: Padding(
@@ -137,7 +138,7 @@ class WeeklyTimelineItem extends StatelessWidget {
                         children: [
                           // 1. Tên môn học
                           Text(
-                            classInfo['subject'] ?? 'Môn học',
+                            classInfo.subject.isEmpty ? 'Môn học' : classInfo.subject,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -156,7 +157,7 @@ class WeeklyTimelineItem extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                classInfo['room'] ?? 'Phòng học',
+                                classInfo.room.isEmpty ? 'Phòng học' : classInfo.room,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey.shade700,
@@ -185,7 +186,7 @@ class WeeklyTimelineItem extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    classInfo['timeRange'] ?? '00:00 - 00:00',
+                                    classInfo.timeRange.isEmpty ? '00:00 - 00:00' : classInfo.timeRange,
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,

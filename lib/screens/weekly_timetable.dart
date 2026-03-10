@@ -2,6 +2,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/weekly_timetable/weekly_timetable.dart';
+import 'package:myfschools/models/academic/timetable_model.dart';
 
 class WeeklyTimetableScreen extends StatefulWidget {
   const WeeklyTimetableScreen({super.key});
@@ -18,42 +19,42 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
   String _selectedWeek = 'Tuần 43';
 
   // Danh sách các ngày trong tuần (giả lập)
-  final List<Map<String, dynamic>> _weekDays = [
-    {'day': 'MON', 'date': '12', 'isActive': false},
-    {'day': 'TUE', 'date': '13', 'isActive': true},
-    {'day': 'WED', 'date': '14', 'isActive': false},
-    {'day': 'THU', 'date': '15', 'isActive': false},
-    {'day': 'FRI', 'date': '16', 'isActive': false},
-    {'day': 'SAT', 'date': '17', 'isActive': false},
-    {'day': 'SUN', 'date': '18', 'isActive': false},
+  final List<WeekDayModel> _weekDays = [
+    WeekDayModel(dayName: 'MON', date: '12', isActive: false),
+    WeekDayModel(dayName: 'TUE', date: '13', isActive: true),
+    WeekDayModel(dayName: 'WED', date: '14', isActive: false),
+    WeekDayModel(dayName: 'THU', date: '15', isActive: false),
+    WeekDayModel(dayName: 'FRI', date: '16', isActive: false),
+    WeekDayModel(dayName: 'SAT', date: '17', isActive: false),
+    WeekDayModel(dayName: 'SUN', date: '18', isActive: false),
   ];
 
   // Danh sách các môn học trong ngày (giả lập giống ảnh thiết kế)
-  final List<Map<String, dynamic>> _dailyClasses = [
-    {
-      'timeLabel': '7:00',
-      'subject': 'Toán Học',
-      'room': 'Delta, Phòng 403',
-      'timeRange': '7:00 - 7:45',
-      'color': const Color(0xFFE8F5E9), // Nền xanh lá nhạt
-      'accentColor': const Color(0xFF4CAF50), // Border xanh lá nhạt
-    },
-    {
-      'timeLabel': '8:00',
-      'subject': 'Toán Học',
-      'room': 'Delta, Phòng 403',
-      'timeRange': '8:00 - 8:45',
-      'color': const Color(0xFFE1F5FE), // Nền xanh dương nhạt
-      'accentColor': const Color(0xFF03A9F4), // Border xanh dương nhạt
-    },
-    {
-      'timeLabel': '9:00',
-      'subject': 'Toán Học',
-      'room': 'Delta, Phòng 403',
-      'timeRange': '9:00 - 9:45',
-      'color': const Color(0xFFFFF3E0), // Nền cam nhạt
-      'accentColor': const Color(0xFFFF9800), // Border cam nhạt
-    },
+  final List<TimetableModel> _dailyClasses = [
+    TimetableModel(
+      timeLabel: '7:00',
+      subject: 'Toán Học',
+      room: 'Delta, Phòng 403',
+      timeRange: '7:00 - 7:45',
+      backgroundColor: const Color(0xFFE8F5E9), // Nền xanh lá nhạt
+      accentColor: const Color(0xFF4CAF50), // Border xanh lá nhạt
+    ),
+    TimetableModel(
+      timeLabel: '8:00',
+      subject: 'Toán Học',
+      room: 'Delta, Phòng 403',
+      timeRange: '8:00 - 8:45',
+      backgroundColor: const Color(0xFFE1F5FE), // Nền xanh dương nhạt
+      accentColor: const Color(0xFF03A9F4), // Border xanh dương nhạt
+    ),
+    TimetableModel(
+      timeLabel: '9:00',
+      subject: 'Toán Học',
+      room: 'Delta, Phòng 403',
+      timeRange: '9:00 - 9:45',
+      backgroundColor: const Color(0xFFFFF3E0), // Nền cam nhạt
+      accentColor: const Color(0xFFFF9800), // Border cam nhạt
+    ),
   ];
 
   @override
@@ -140,10 +141,10 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                 setState(() {
                   // Đặt lại tất cả thành false
                   for (var element in _weekDays) {
-                    element['isActive'] = false;
+                    element.isActive = false;
                   }
                   // Đặt ngày hiện tại thành true
-                  _weekDays[index]['isActive'] = true;
+                  _weekDays[index].isActive = true;
                 });
               },
             ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/forget_password/forget_password.dart';
 import 'package:myfschools/screens/home.dart';
-import 'package:myfschools/services/auth_service.dart';
+import 'package:myfschools/controllers/auth/auth_controller.dart';
 import 'package:myfschools/utils/constants/t_texts.dart';
 import 'package:myfschools/widgets/copyright_footer.dart';
 import 'package:myfschools/widgets/custom_label_field.dart';
@@ -127,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         );
 
                                         bool isSuccess =
-                                            await AuthService.loginUser(
+                                            await AuthController.loginUser(
                                               _phoneController.text.trim(),
                                               _passwordController.text,
                                             );

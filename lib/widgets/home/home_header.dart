@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myfschools/screens/profile/profile.dart';
 import 'package:myfschools/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myfschools/models/student/student_model.dart';
 
 class HomeHeader extends StatefulWidget {
   final Color primaryColor;
@@ -16,8 +17,8 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader> {
-  List<Map<String, dynamic>> _students = [];
-  Map<String, dynamic>? _selectedChild;
+  List<StudentModel> _students = [];
+  StudentModel? _selectedChild;
 
   @override
   void initState() {
@@ -32,21 +33,7 @@ class _HomeHeaderState extends State<HomeHeader> {
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
           final List<dynamic> rawStudents = jsonDecode(studentsJson);
-          _students = rawStudents.map((e) {
-            final String firstName = e['firstName'] ?? '';
-            final String middleName = e['middleName'] ?? '';
-            final String lastName = e['lastName'] ?? '';
-            final String name = [firstName, middleName, lastName].where((part) => part.trim().isNotEmpty).join(' ').trim();
-            final String className = e['className'] ?? '';
-            final String schoolName = e['schoolName'] ?? '';
-            
-            return {
-              "id": e['id'],
-              "name": name.isEmpty ? "Học sinh" : name,
-              "class": "$className - $schoolName",
-              "avatar": e['avatarUrl'] ?? "",
-            };
-          }).toList();
+          _students = rawStudents.map((e) => StudentModel.fromJson(e)).toList();
 
           if (_students.isNotEmpty) {
             _selectedChild = _students.first;
@@ -81,8 +68,8 @@ class _HomeHeaderState extends State<HomeHeader> {
                 ),
               ),
               ..._students.map((child) {
-                final isSelected = child["id"] == _selectedChild?["id"];
-                final String avatarUrl = child["avatar"] ?? "";
+                final isSelected = child.id == _selectedChild?.id;
+                final String avatarUrl = child.avatarUrl;
 
                 return ListTile(
                   leading: CircleAvatar(
@@ -108,13 +95,13 @@ class _HomeHeaderState extends State<HomeHeader> {
                           ),
                   ),
                   title: Text(
-                    child["name"] ?? "",
+                    child.fullName,
                     style: TextStyle(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? Colors.green : Colors.black87,
                     ),
                   ),
-                  subtitle: Text(child["class"] ?? ""),
+                  subtitle: Text("${child.className} - ${child.schoolName}"),
                   trailing: isSelected 
                       ? const Icon(Icons.check_circle, color: Colors.green) 
                       : null,
@@ -223,11 +210,11 @@ class _HomeHeaderState extends State<HomeHeader> {
                     CircleAvatar(
                       radius: 22,
                       backgroundColor: Colors.grey.shade200,
-                      child: _selectedChild!["avatar"] != null &&
-                              _selectedChild!["avatar"].toString().startsWith('http')
+                      child: _selectedChild!.avatarUrl.isNotEmpty &&
+                              _selectedChild!.avatarUrl.startsWith('http')
                           ? ClipOval(
                               child: Image.network(
-                                _selectedChild!["avatar"],
+                                _selectedChild!.avatarUrl,
                                 width: 44,
                                 height: 44,
                                 fit: BoxFit.cover,
@@ -252,14 +239,14 @@ class _HomeHeaderState extends State<HomeHeader> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _selectedChild!["name"] ?? "",
+                            _selectedChild!.fullName,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
                           Text(
-                            _selectedChild!["class"] ?? "",
+                            "${_selectedChild!.className} - ${_selectedChild!.schoolName}",
                             style: const TextStyle(color: Colors.grey, fontSize: 12),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

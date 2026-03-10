@@ -2,6 +2,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/score_board/score_board.dart';
+import 'package:myfschools/models/academic/score_model.dart';
 
 class ScoreBoardScreen extends StatefulWidget {
   const ScoreBoardScreen({super.key});
@@ -15,8 +16,8 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   final List<String> _years = ['2020', '2021', '2022'];
   final List<String> _semesters = ['1', '2', 'Cả năm'];
 
-  final List<SubjectItem> _subjects = [
-    SubjectItem(
+  final List<ScoreModel> _subjects = [
+    ScoreModel(
       id: 'TOAN1',
       name: 'Toán Học',
       icon: Icons.calculate,
@@ -24,7 +25,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
       averageScore: 9.5,
       className: '12A9',
     ),
-    SubjectItem(
+    ScoreModel(
       id: 'VAN',
       name: 'Ngữ Văn',
       icon: Icons.menu_book,
@@ -32,7 +33,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
       averageScore: 8.0,
       className: '12A9',
     ),
-    SubjectItem(
+    ScoreModel(
       id: 'ANH',
       name: 'Tiếng Anh',
       icon: Icons.language,
@@ -40,7 +41,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
       averageScore: 9.5,
       className: '12A9',
     ),
-    SubjectItem(
+    ScoreModel(
       id: 'KHOA',
       name: 'Khoa Học',
       icon: Icons.science,
@@ -48,7 +49,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
       averageScore: 9.5,
       className: '12A9',
     ),
-    SubjectItem(
+    ScoreModel(
       id: 'NHAC',
       name: 'Âm Nhạc',
       icon: Icons.library_music,
@@ -56,7 +57,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
       averageScore: 9.5,
       className: '12A9',
     ),
-    SubjectItem(
+    ScoreModel(
       id: 'TOAN2',
       name: 'Toán học',
       icon: Icons.calculate,
