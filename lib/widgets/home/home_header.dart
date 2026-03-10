@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/profile/profile.dart';
-import 'package:myfschools/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myfschools/models/student/student_model.dart';
 
@@ -19,6 +18,7 @@ class HomeHeader extends StatefulWidget {
 class _HomeHeaderState extends State<HomeHeader> {
   List<StudentModel> _students = [];
   StudentModel? _selectedChild;
+  String _parentName = "Phụ huynh";
 
   @override
   void initState() {
@@ -30,6 +30,7 @@ class _HomeHeaderState extends State<HomeHeader> {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
+        _parentName = prefs.getString('USER_NAME') ?? "Phụ huynh";
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
           final List<dynamic> rawStudents = jsonDecode(studentsJson);
@@ -177,7 +178,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            AuthService.userName ?? "Cường Đỗ",
+                            _parentName,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,

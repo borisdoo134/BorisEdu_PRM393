@@ -22,7 +22,6 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
     final student = widget.student;
 
     final String displayName = student.fullName;
-    final String shortSubtitle = student.className;
     final String subtitle = "${student.className} - ${student.schoolName}";
 
     final String status = student.displayStatus;
@@ -136,7 +135,9 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
                 child: Column(
                   children: [
                     _buildDetailRow("Họ và Tên :", displayName),
-                    _buildDetailRow("Lớp :", shortSubtitle),
+                    _buildDetailRow("Trường :", student.schoolName),
+                    _buildDetailRow("Lớp :", student.className),
+                    _buildDetailRow("Năm học :", student.academicYear),
                     _buildDetailRow("Ngày sinh :", formattedDob),
                     _buildDetailRow("Địa chỉ :", address),
                     _buildDetailRow("Giới tính :", gender),

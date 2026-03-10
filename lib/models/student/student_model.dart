@@ -5,6 +5,7 @@ class StudentModel {
   final String lastName;
   final String className;
   final String schoolName;
+  final String academicYear;
   final String status;
   final String avatarUrl;
   final String dateOfBirth;
@@ -21,6 +22,7 @@ class StudentModel {
     this.lastName = '',
     this.className = '',
     this.schoolName = '',
+    this.academicYear = '',
     this.status = '',
     this.avatarUrl = '',
     this.dateOfBirth = '',
@@ -32,13 +34,24 @@ class StudentModel {
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
+    String cName = '';
+    String sName = '';
+    String aYear = '';
+
+    if (json['schoolClass'] != null) {
+      cName = json['schoolClass']['className']?.toString() ?? '';
+      sName = json['schoolClass']['schoolName']?.toString() ?? '';
+      aYear = json['schoolClass']['academicYear']?.toString() ?? '';
+    }
+
     return StudentModel(
       id: json['id']?.toString() ?? '',
       firstName: json['firstName']?.toString() ?? '',
       middleName: json['middleName']?.toString() ?? '',
       lastName: json['lastName']?.toString() ?? '',
-      className: json['className']?.toString() ?? '',
-      schoolName: json['schoolName']?.toString() ?? '',
+      className: cName,
+      schoolName: sName,
+      academicYear: aYear,
       status: json['status']?.toString() ?? '',
       avatarUrl: json['avatarUrl']?.toString() ?? '',
       dateOfBirth: json['dateOfBirth']?.toString() ?? '',
@@ -58,6 +71,7 @@ class StudentModel {
       'lastName': lastName,
       'className': className,
       'schoolName': schoolName,
+      'academicYear': academicYear,
       'status': status,
       'avatarUrl': avatarUrl,
       'dateOfBirth': dateOfBirth,
