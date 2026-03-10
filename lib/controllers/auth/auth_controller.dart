@@ -20,42 +20,45 @@ class AuthController {
       );
 
       if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
+        final Map<String, dynamic> responseBody = jsonDecode(response.body);
 
-        final accessToken = responseData['accessToken'];
-        final refreshToken = responseData['refreshToken'];
+        if (responseBody['status'] == 200 && responseBody['data'] != null) {
+          final responseData = responseBody['data'];
 
-        final userData = responseData['user'] ?? {};
-        
-        // Parse ra UserModel
-        currentUser = UserModel.fromJson(userData);
+          final accessToken = responseData['accessToken'];
+          final refreshToken = responseData['refreshToken'];
 
-        final prefs = await SharedPreferences.getInstance();
+          final userData = responseData['user'] ?? {};
+          
+          // Parse ra UserModel
+          currentUser = UserModel.fromJson(userData);
 
-        if (accessToken != null) {
-          await prefs.setString('ACCESS_TOKEN', accessToken);
+          final prefs = await SharedPreferences.getInstance();
+
+          if (accessToken != null) {
+            await prefs.setString('ACCESS_TOKEN', accessToken);
+          }
+
+          if (refreshToken != null) {
+            await prefs.setString('REFRESH_TOKEN', refreshToken);
+          }
+
+          await prefs.setString('USER_NAME', currentUser!.fullName);
+          await prefs.setString('USER_PHONE', phone);
+
+          // Lưu danh sách con ra List<StudentModel>
+          final studentsJson = userData['students'] as List? ?? [];
+          userStudents = studentsJson.map((e) => StudentModel.fromJson(e)).toList();
+          await prefs.setString('USER_STUDENTS', jsonEncode(studentsJson));
+
+          return true;
+        } else {
+          return false;
         }
-
-        if (refreshToken != null) {
-          await prefs.setString('REFRESH_TOKEN', refreshToken);
-        }
-
-        await prefs.setString('USER_NAME', currentUser!.fullName);
-        await prefs.setString('USER_PHONE', phone);
-
-        // Lưu danh sách con ra List<StudentModel>
-        final studentsJson = userData['students'] as List? ?? [];
-        userStudents = studentsJson.map((e) => StudentModel.fromJson(e)).toList();
-        await prefs.setString('USER_STUDENTS', jsonEncode(studentsJson));
-
-        print('Đã lưu Token và thông tin User thành công!');
-        return true;
       } else {
-        print('Đăng nhập thất bại. Mã lỗi: \${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('Không thể kết nối tới máy chủ: \$e');
       return false;
     }
   }
@@ -80,9 +83,8 @@ class AuthController {
             if (accessToken != null) 'Authorization': 'Bearer \$accessToken',
           },
         );
-        print('Đã gọi API đăng xuất thành công!');
-      } catch (e) {
-        print('Lỗi gọi API logout: \$e');
+      } catch (_) {
+        // Ignored error during logout
       }
     }
 
@@ -93,7 +95,5 @@ class AuthController {
     await prefs.remove('USER_STUDENTS');
     currentUser = null;
     userStudents.clear();
-
-    print('Đã xóa sạch token ở bộ nhớ máy!');
   }
 }
