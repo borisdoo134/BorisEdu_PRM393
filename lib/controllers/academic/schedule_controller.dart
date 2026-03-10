@@ -60,6 +60,10 @@ class ScheduleController {
               teacherId: json['teacherId'] as int? ?? 0,
               teacherName: json['teacherName']?.toString() ?? '',
               teacherAvatar: json['teacherAvatar']?.toString() ?? '',
+              actualDate: json['actualDate']?.toString() ?? '',
+              month: json['month'] as int? ?? 0,
+              year: json['year'] as int? ?? 0,
+              weekOfYear: json['weekOfYear'] as int? ?? 0,
               backgroundColor: bgColors[index % bgColors.length],
               accentColor: accColors[index % accColors.length],
             );

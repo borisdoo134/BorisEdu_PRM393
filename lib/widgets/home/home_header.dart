@@ -183,7 +183,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                                     width: 60,
                                     height: 60,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.asset('assets/avatars/phu_huynh.png', width: 60, height: 60, fit: BoxFit.cover),
+                                    errorBuilder: (ctx, err, stackTrace) => Image.asset('assets/avatars/phu_huynh.png', width: 60, height: 60, fit: BoxFit.cover),
                                   ),
                                 )
                               : ClipOval(

@@ -18,17 +18,20 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
     0xFF43A047,
   ); // Màu xanh lá chủ đạo (tương tự appBar)
 
-  String _selectedWeek = 'Tuần 43';
+  int? _selectedWeekNum;
+  List<int> _availableWeeks = [];
+  int _currentMonth = DateTime.now().month;
+  int _currentYear = DateTime.now().year;
 
-  // Danh sách các ngày trong tuần (giả lập)
-  final List<WeekDayModel> _weekDays = [
-    WeekDayModel(dayName: 'MON', date: '12', isActive: false),
-    WeekDayModel(dayName: 'TUE', date: '13', isActive: true),
-    WeekDayModel(dayName: 'WED', date: '14', isActive: false),
-    WeekDayModel(dayName: 'THU', date: '15', isActive: false),
-    WeekDayModel(dayName: 'FRI', date: '16', isActive: false),
-    WeekDayModel(dayName: 'SAT', date: '17', isActive: false),
-    WeekDayModel(dayName: 'SUN', date: '18', isActive: false),
+  // Danh sách các ngày trong tuần
+  late final List<WeekDayModel> _weekDays = [
+    WeekDayModel(dayName: 'MON', date: '-', isActive: DateTime.now().weekday == 1),
+    WeekDayModel(dayName: 'TUE', date: '-', isActive: DateTime.now().weekday == 2),
+    WeekDayModel(dayName: 'WED', date: '-', isActive: DateTime.now().weekday == 3),
+    WeekDayModel(dayName: 'THU', date: '-', isActive: DateTime.now().weekday == 4),
+    WeekDayModel(dayName: 'FRI', date: '-', isActive: DateTime.now().weekday == 5),
+    WeekDayModel(dayName: 'SAT', date: '-', isActive: DateTime.now().weekday == 6),
+    WeekDayModel(dayName: 'SUN', date: '-', isActive: DateTime.now().weekday == 7),
   ];
 
   List<TimetableModel> _fullSchedule = [];
@@ -50,8 +53,47 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
       _fullSchedule = await ScheduleController.getTimetableByStudentId(studentId);
     }
     
+    _availableWeeks = List.generate(52, (i) => i + 1);
+    
+    if (_fullSchedule.isNotEmpty && _selectedWeekNum == null) {
+      _selectedWeekNum = _fullSchedule.first.weekOfYear;
+      _currentYear = _fullSchedule.first.year;
+    } else if (_selectedWeekNum == null) {
+      final now = DateTime.now();
+      final jan4 = DateTime(now.year, 1, 4);
+      final firstMonday = jan4.subtract(Duration(days: jan4.weekday - 1));
+      _selectedWeekNum = (now.difference(firstMonday).inDays / 7).floor() + 1;
+      _currentYear = now.year;
+    }
+
+    _generateWeekDays();
     _filterClassesForActiveDay();
     setState(() => _isLoading = false);
+  }
+
+  DateTime _firstDayOfWeek(int year, int weekNumber) {
+    final DateTime jan4 = DateTime(year, 1, 4);
+    final DateTime firstMonday = jan4.subtract(Duration(days: jan4.weekday - 1));
+    return firstMonday.add(Duration(days: 7 * (weekNumber - 1)));
+  }
+
+  void _generateWeekDays() {
+    if (_selectedWeekNum == null) return;
+    
+    DateTime startOfWeek = _firstDayOfWeek(_currentYear, _selectedWeekNum!);
+    _currentMonth = startOfWeek.month; // Cập nhật tháng dựa trên thứ 2 của tuần đó
+
+    for (int i = 0; i < _weekDays.length; i++) {
+      DateTime currentDay = startOfWeek.add(Duration(days: i));
+      String name = _weekDays[i].dayName;
+      String mappedDate = currentDay.day.toString().padLeft(2, '0');
+      
+      _weekDays[i] = WeekDayModel(
+        dayName: name, 
+        date: mappedDate, 
+        isActive: _weekDays[i].isActive
+      );
+    }
   }
 
   void _filterClassesForActiveDay() {
@@ -71,7 +113,13 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
     };
     
     String beDayName = dayNamesMap[activeDay.dayName] ?? '';
-    _dailyClasses = _fullSchedule.where((s) => s.dayOfWeek == beDayName).toList();
+    if (_selectedWeekNum != null) {
+      _dailyClasses = _fullSchedule.where(
+        (s) => s.dayOfWeek == beDayName && s.weekOfYear == _selectedWeekNum
+      ).toList();
+    } else {
+      _dailyClasses = [];
+    }
     _dailyClasses.sort((a, b) => a.timeLabel.compareTo(b.timeLabel));
   }
 
@@ -109,44 +157,53 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    "Tháng 10 / 2026",
-                    style: TextStyle(
+                  Text(
+                    "Tháng $_currentMonth / $_currentYear",
+                    style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  DropdownButton<String>(
-                    value: _selectedWeek,
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.black87,
+                  if (_availableWeeks.isNotEmpty)
+                    DropdownButton<int>(
+                      value: _selectedWeekNum,
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.black87,
+                      ),
+                      elevation: 16,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      underline: Container(), // Ẩn gạch chân
+                      onChanged: (int? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            _selectedWeekNum = newValue;
+                            _generateWeekDays();
+                            _filterClassesForActiveDay();
+                          });
+                        }
+                      },
+                      items: _availableWeeks.map<DropdownMenuItem<int>>((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('Tuần $value'),
+                        );
+                      }).toList(),
+                    )
+                  else
+                    Text(
+                      "Chưa có lịch",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    elevation: 16,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    underline: Container(),
-                    // Ẩn gạch chân
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _selectedWeek = newValue;
-                        });
-                      }
-                    },
-                    items: <String>['Tuần 41', 'Tuần 42', 'Tuần 43', 'Tuần 44']
-                        .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        })
-                        .toList(),
-                  ),
                 ],
               ),
             ),
@@ -189,12 +246,26 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      "Thứ 3, 10 / 2026",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
+                    Builder(
+                      builder: (context) {
+                        final activeDay = _weekDays.firstWhere(
+                          (d) => d.isActive,
+                          orElse: () => _weekDays[1],
+                        );
+                        final Map<String, String> shortToVnMap = {
+                          'MON': '2', 'TUE': '3', 'WED': '4', 'THU': '5',
+                          'FRI': '6', 'SAT': '7', 'SUN': 'CN',
+                        };
+                        String vnDay = shortToVnMap[activeDay.dayName] ?? '?';
+                        String vnDate = activeDay.date;
+                        return Text(
+                          "Thứ $vnDay, $vnDate / $_currentMonth / $_currentYear",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        );
+                      }
                     ),
                   ],
                 ),
@@ -224,7 +295,7 @@ class _WeeklyTimetableScreenState extends State<WeeklyTimetableScreen> {
                       padding: const EdgeInsets.only(
                         left: 20,
                         right: 24,
-                        bottom: 20,
+                        bottom: 120,
                         top: 10,
                       ),
                       itemCount: _dailyClasses.length,

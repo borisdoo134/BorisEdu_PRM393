@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ? Image.network(
                                   _parentAvatar,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Image.asset(
+                                  errorBuilder: (ctx, err, stackTrace) => Image.asset(
                                     'assets/avatars/phu_huynh.png',
                                     fit: BoxFit.cover,
                                   ),

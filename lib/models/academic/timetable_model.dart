@@ -10,6 +10,10 @@ class TimetableModel {
   final String teacherName;
   final String teacherAvatar;
   final String dayOfWeek;
+  final String actualDate;
+  final int month;
+  final int year;
+  final int weekOfYear;
   final Color backgroundColor;
   final Color accentColor;
 
@@ -23,6 +27,10 @@ class TimetableModel {
     this.teacherName = '',
     this.teacherAvatar = '',
     this.dayOfWeek = '',
+    this.actualDate = '',
+    this.month = 0,
+    this.year = 0,
+    this.weekOfYear = 0,
     this.backgroundColor = const Color(0xFFE8F5E9),
     this.accentColor = const Color(0xFF4CAF50),
   });
