@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _parentName = "Đang tải...";
   String _parentPhone = "Đang tải...";
+  String _parentRole = "Phụ huynh";
   String _parentAvatar = "";
   List<UserModel> _students = [];
 
@@ -39,6 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _parentName = prefs.getString('USER_NAME') ?? "Phụ huynh";
         _parentPhone = prefs.getString('USER_PHONE') ?? "Không có số điện thoại";
+        _parentRole = prefs.getString('USER_ROLE') ?? "Phụ huynh";
         _parentAvatar = prefs.getString('USER_AVATAR') ?? "";
         
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
@@ -47,6 +49,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _students = parsedJson.map((e) => UserModel.fromJson(e)).toList();
         } catch (_) {
           _students = [];
+        }
+
+        if (_parentRole == "Học sinh") {
+          final String currentUserJson = prefs.getString('CURRENT_USER_DATA') ?? '{}';
+          try {
+            final Map<String, dynamic> userMap = jsonDecode(currentUserJson);
+            if (userMap.isNotEmpty) {
+              _students = [UserModel.fromJson(userMap)];
+            }
+          } catch (_) {}
         }
       });
     }
@@ -158,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Phụ huynh",
+                          _parentRole,
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 14,
@@ -179,10 +191,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 30),
 
-              // --- DANH SÁCH CON ---
-              const Text(
-                "Danh sách con",
-                style: TextStyle(
+              // --- DANH SÁCH CON / THÔNG TIN CHI TIẾT ---
+              Text(
+                _parentRole == "Học sinh" ? "Thông tin chi tiết" : "Danh sách con",
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -202,7 +214,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ..._students.map((student) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: ProfileChildCard(student: student),
+                    child: ProfileChildCard(
+                      student: student,
+                      hidePhone: _parentRole == "Học sinh",
+                    ),
                   );
                 }),
 

@@ -5,9 +5,12 @@ import 'package:myfschools/models/auth/user_model.dart';
 class ProfileChildCard extends StatefulWidget {
   final UserModel student;
 
+  final bool hidePhone;
+
   const ProfileChildCard({
     super.key,
     required this.student,
+    this.hidePhone = false,
   });
 
   @override
@@ -141,7 +144,7 @@ class _ProfileChildCardState extends State<ProfileChildCard> {
                     _buildDetailRow("Ngày sinh :", formattedDob),
                     _buildDetailRow("Địa chỉ :", address),
                     _buildDetailRow("Giới tính :", gender),
-                    _buildDetailRow("Số điện thoại:", phone),
+                    if (!widget.hidePhone) _buildDetailRow("Số điện thoại:", phone),
                     _buildDetailRow("Tên bố:", fatherName),
                     _buildDetailRow("Tên mẹ:", motherName),
                     _buildDetailRow("Tình trạng:", status),

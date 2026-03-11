@@ -40,6 +40,14 @@ class AuthService {
         }
         userName = fullName.isNotEmpty ? fullName : 'Phụ huynh';
         userPhone = phone;
+        
+        // Parse Role
+        final rolesList = (userData['roles'] as List? ?? []).map((e) {
+          if (e is Map) return e['name']?.toString() ?? '';
+          return e.toString();
+        }).toList();
+        final bool isStudentRole = rolesList.any((r) => r.toUpperCase().contains('STUDENT'));
+        final String userRole = isStudentRole ? "Học sinh" : "Phụ huynh";
 
         // ==========================================
         // THỰC HIỆN LƯU TOKEN VÀO BỘ NHỚ MÁY
@@ -56,11 +64,14 @@ class AuthService {
           await prefs.setString('REFRESH_TOKEN', refreshToken);
         }
 
-        // Bạn cũng có thể lưu luôn tên để show ra màn hình Home
         await prefs.setString('USER_NAME', userName!);
         await prefs.setString('USER_PHONE', phone);
+        await prefs.setString('USER_ROLE', userRole);
 
-        // Lưu danh sách con (students)
+        // Lưu bản thân user
+        await prefs.setString('CURRENT_USER_DATA', jsonEncode(userData));
+
+        // Lưu danh sách con (children)
         final students = userData['children'] ?? [];
         await prefs.setString('USER_STUDENTS', jsonEncode(students));
 
@@ -121,8 +132,9 @@ class AuthService {
     await prefs.remove('ACCESS_TOKEN');
     await prefs.remove('REFRESH_TOKEN');
     await prefs.remove('USER_NAME');
-    await prefs.remove('USER_PHONE');
     await prefs.remove('USER_STUDENTS');
+    await prefs.remove('USER_ROLE');
+    await prefs.remove('CURRENT_USER_DATA');
     userName = null;
     userPhone = null;
 

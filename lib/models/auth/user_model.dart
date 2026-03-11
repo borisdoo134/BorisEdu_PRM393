@@ -18,6 +18,7 @@ class UserModel {
 
   final Map<String, dynamic>? schoolClass;
   final List<UserModel> children;
+  final List<String> roles;
 
   UserModel({
     this.id = '',
@@ -36,6 +37,7 @@ class UserModel {
     this.motherName = '',
     this.schoolClass,
     this.children = const [],
+    this.roles = const [],
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -58,6 +60,12 @@ class UserModel {
       children: (json['children'] as List? ?? [])
           .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      roles: (json['roles'] as List? ?? [])
+          .map((e) {
+            if (e is Map) return e['name']?.toString() ?? '';
+            return e.toString();
+          })
+          .toList(),
     );
   }
 
@@ -79,6 +87,7 @@ class UserModel {
       'motherName': motherName,
       'schoolClass': schoolClass,
       'children': children.map((e) => e.toJson()).toList(),
+      'roles': roles,
     };
   }
 
@@ -93,6 +102,8 @@ class UserModel {
     }
     return name;
   }
+
+  bool get isStudent => roles.any((r) => r.toUpperCase().contains('STUDENT'));
 
   // Tương tự StudentModel cũ
   String get className => schoolClass?['className']?.toString() ?? '';

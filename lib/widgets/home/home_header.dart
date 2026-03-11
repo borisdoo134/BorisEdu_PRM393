@@ -19,6 +19,7 @@ class _HomeHeaderState extends State<HomeHeader> {
   List<UserModel> _students = [];
   UserModel? _selectedChild;
   String _parentName = "Phụ huynh";
+  String _parentRole = "Phụ huynh";
   String _parentAvatar = "";
 
   @override
@@ -32,6 +33,7 @@ class _HomeHeaderState extends State<HomeHeader> {
     if (mounted) {
       setState(() {
         _parentName = prefs.getString('USER_NAME') ?? "Phụ huynh";
+        _parentRole = prefs.getString('USER_ROLE') ?? "Phụ huynh";
         _parentAvatar = prefs.getString('USER_AVATAR') ?? "";
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
@@ -196,7 +198,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Xin chào, Phụ huynh",
+                            "Xin chào, $_parentRole",
                             style: TextStyle(
                               color: Colors.green[100],
                               fontSize: 14,

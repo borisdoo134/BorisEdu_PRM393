@@ -42,6 +42,9 @@ class AuthController {
             await prefs.setString('REFRESH_TOKEN', refreshToken);
           }
 
+          final String userRole = currentUser!.isStudent ? "Học sinh" : "Phụ huynh";
+          await prefs.setString('USER_ROLE', userRole);
+
           await prefs.setString('USER_NAME', currentUser!.fullName);
           await prefs.setString('USER_PHONE', phone);
           await prefs.setString('USER_AVATAR', currentUser!.avatarUrl);
@@ -50,6 +53,9 @@ class AuthController {
           final studentsJson = userData['children'] as List? ?? [];
           userStudents = studentsJson.map((e) => UserModel.fromJson(e)).toList();
           await prefs.setString('USER_STUDENTS', jsonEncode(studentsJson));
+          
+          // Lưu cả user hiện tại phòng hờ lúc gọi profile
+          await prefs.setString('CURRENT_USER_DATA', jsonEncode(userData));
 
           return true;
         } else {
@@ -94,7 +100,9 @@ class AuthController {
     await prefs.remove('USER_PHONE');
     await prefs.remove('USER_AVATAR');
     await prefs.remove('USER_STUDENTS');
+    await prefs.remove('USER_ROLE');
     currentUser = null;
     userStudents.clear();
+    await prefs.remove('CURRENT_USER_DATA');
   }
 }
