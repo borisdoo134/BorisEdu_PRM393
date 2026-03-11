@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/profile/profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:myfschools/models/student/student_model.dart';
+import 'package:myfschools/models/auth/user_model.dart';
 
 class HomeHeader extends StatefulWidget {
   final Color primaryColor;
@@ -16,8 +16,8 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader> {
-  List<StudentModel> _students = [];
-  StudentModel? _selectedChild;
+  List<UserModel> _students = [];
+  UserModel? _selectedChild;
   String _parentName = "Phụ huynh";
   String _parentAvatar = "";
 
@@ -36,7 +36,7 @@ class _HomeHeaderState extends State<HomeHeader> {
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
           final List<dynamic> rawStudents = jsonDecode(studentsJson);
-          _students = rawStudents.map((e) => StudentModel.fromJson(e)).toList();
+          _students = rawStudents.map((e) => UserModel.fromJson(e)).toList();
 
           if (_students.isNotEmpty) {
             String? savedId = prefs.getString('SELECTED_STUDENT_ID');

@@ -61,7 +61,7 @@ class AuthService {
         await prefs.setString('USER_PHONE', phone);
 
         // Lưu danh sách con (students)
-        final students = userData['students'] ?? [];
+        final students = userData['children'] ?? [];
         await prefs.setString('USER_STUDENTS', jsonEncode(students));
 
         print('Đã lưu Token vào SharedPreferences thành công!');

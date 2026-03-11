@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/login.dart';
-import 'package:myfschools/models/student/student_model.dart';
+import 'package:myfschools/models/auth/user_model.dart';
 
 class ProfileChildCard extends StatefulWidget {
-  final StudentModel student;
+  final UserModel student;
 
   const ProfileChildCard({
     super.key,

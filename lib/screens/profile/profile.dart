@@ -4,7 +4,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/profile/profile.dart';
-import 'package:myfschools/models/student/student_model.dart';
+import 'package:myfschools/models/auth/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _parentName = "Đang tải...";
   String _parentPhone = "Đang tải...";
   String _parentAvatar = "";
-  List<StudentModel> _students = [];
+  List<UserModel> _students = [];
 
   final NotchBottomBarController _controller = NotchBottomBarController(
     index: 2,
@@ -44,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final String studentsJson = prefs.getString('USER_STUDENTS') ?? '[]';
         try {
           final List<dynamic> parsedJson = jsonDecode(studentsJson);
-          _students = parsedJson.map((e) => StudentModel.fromJson(e)).toList();
+          _students = parsedJson.map((e) => UserModel.fromJson(e)).toList();
         } catch (_) {
           _students = [];
         }

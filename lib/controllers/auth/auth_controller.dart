@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myfschools/models/auth/user_model.dart';
-import 'package:myfschools/models/student/student_model.dart';
 
 class AuthController {
   // Biến lưu trữ thông tin User để xài trên giao diện
   static UserModel? currentUser;
-  static List<StudentModel> userStudents = [];
+  static List<UserModel> userStudents = [];
 
   static Future<bool> loginUser(String phone, String password) async {
     final String apiUrl = 'http://10.0.2.2:8386/api/v1/auth/login';
@@ -47,9 +46,9 @@ class AuthController {
           await prefs.setString('USER_PHONE', phone);
           await prefs.setString('USER_AVATAR', currentUser!.avatarUrl);
 
-          // Lưu danh sách con ra List<StudentModel>
-          final studentsJson = userData['students'] as List? ?? [];
-          userStudents = studentsJson.map((e) => StudentModel.fromJson(e)).toList();
+          // Lưu danh sách con ra List<UserModel>
+          final studentsJson = userData['children'] as List? ?? [];
+          userStudents = studentsJson.map((e) => UserModel.fromJson(e)).toList();
           await prefs.setString('USER_STUDENTS', jsonEncode(studentsJson));
 
           return true;
