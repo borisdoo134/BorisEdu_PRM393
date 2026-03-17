@@ -76,6 +76,7 @@ class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
         className: model.className,
         present: model.presentCount,
         total: model.totalConducted,
+        bannedFromExam: model.bannedFromExam,
       ),
     );
   }
@@ -83,6 +84,10 @@ class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = const Color(0xFF43A047);
+
+    final filteredAttendances = _selectedYear == 'Tất cả'
+        ? _attendances
+        : _attendances.where((item) => item.academicYear == _selectedYear).toList();
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -132,16 +137,16 @@ class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator(color: Colors.green))
-                    : _attendances.isEmpty
+                    : filteredAttendances.isEmpty
                         ? const Center(child: Text('Không có dữ liệu điểm danh', style: TextStyle(color: Colors.grey)))
                         : ListView.builder(
                             physics: const BouncingScrollPhysics(),
-                            itemCount: _attendances.length + 1, // +1 for the bottom padding
+                            itemCount: filteredAttendances.length + 1, // +1 for the bottom padding
                             itemBuilder: (context, index) {
-                              if (index == _attendances.length) {
+                              if (index == filteredAttendances.length) {
                                 return const SizedBox(height: 100); // padding for bottom nav bar
                               }
-                              return _buildCard(_attendances[index]);
+                              return _buildCard(filteredAttendances[index]);
                             },
                           ),
               ),

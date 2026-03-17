@@ -5,6 +5,7 @@ class SubjectAttendanceCard extends StatelessWidget {
   final String className;
   final int present;
   final int total;
+  final bool bannedFromExam;
 
   const SubjectAttendanceCard({
     super.key,
@@ -12,6 +13,7 @@ class SubjectAttendanceCard extends StatelessWidget {
     required this.className,
     required this.present,
     required this.total,
+    this.bannedFromExam = false,
   });
 
   @override
@@ -20,14 +22,17 @@ class SubjectAttendanceCard extends StatelessWidget {
     double percentage = total > 0 ? present / total : 0;
     int percentageInt = (percentage * 100).round();
     
-    Color presentColor = Colors.greenAccent.shade400;
-    Color absentColor = Colors.orange;
+    Color presentColor = bannedFromExam ? const Color(0xFFF27123) : Colors.greenAccent.shade400;
+    Color absentColor = bannedFromExam ? const Color(0xFFE8EDF2) : Colors.orange;
+    Color textColor = bannedFromExam ? const Color(0xFFF27123) : Colors.green;
+    Color bgColor = bannedFromExam ? const Color(0xFFFFF9F5) : Colors.white;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
+        border: bannedFromExam ? Border.all(color: const Color(0xFFFCD0B4), width: 1.5) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -36,90 +41,127 @@ class SubjectAttendanceCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Stack(
         children: [
-          SizedBox(
-            width: 80,
-            height: 80,
-            child: Stack(
-              fit: StackFit.expand,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                CircularProgressIndicator(
-                  value: percentage,
-                  backgroundColor: absentColor,
-                  color: presentColor,
-                  strokeWidth: 8,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "$percentageInt",
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: percentage,
+                        backgroundColor: absentColor,
+                        color: presentColor,
+                        strokeWidth: 8,
                       ),
-                    ),
-                    const Text(
-                      "Chuyên Cần",
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.black87,
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "$percentageInt",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: bannedFromExam ? const Color(0xFFF27123) : Colors.black,
+                            ),
+                          ),
+                          Text(
+                            "CHUYÊN CẦN",
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w600,
+                              color: bannedFromExam ? const Color(0xFF475569) : Colors.black87,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  subjectName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.menu_book, size: 16, color: Colors.blue.shade300),
-                    const SizedBox(width: 8),
-                    Text(
-                      className,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                const SizedBox(width: 24),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        subjectName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                const Divider(height: 16, thickness: 1),
-                Row(
-                  children: [
-                    const Icon(Icons.person_outline, size: 16, color: Colors.green),
-                    const SizedBox(width: 8),
-                    Text(
-                      "$present / $total Tiết",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green,
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.menu_book, size: 16, color: Colors.blue.shade300),
+                          const SizedBox(width: 8),
+                          Text(
+                            className,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Divider(height: 16, thickness: 1, color: bannedFromExam ? const Color(0xFFFCD0B4) : null),
+                      Row(
+                        children: [
+                          Icon(bannedFromExam ? Icons.how_to_reg : Icons.person_outline, size: 16, color: textColor),
+                          const SizedBox(width: 8),
+                          Text(
+                            "$present / $total Tiết",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          if (bannedFromExam)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF27123),
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(15),
+                    bottomLeft: Radius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error, size: 14, color: Colors.white),
+                    const SizedBox(width: 4),
+                    const Text(
+                      "BỊ CẤM THI",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

@@ -142,7 +142,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
                                 date: _formatDate(record.date),
                                 teacher: record.teacherName,
                                 session: "Tiết ${record.period}",
-                                isPresent: record.status == "PRESENT",
+                                status: record.status,
                               )),
                       ],
                     ),
@@ -276,7 +276,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
             children: [
               _buildStatBox(_detailData!.presentCount.toString(), "Có mặt", Colors.green),
               _buildStatBox(_detailData!.absentCount.toString(), "Vắng mặt", Colors.red),
-              _buildStatBox(_detailData!.futureCount.toString(), "Tương lai", Colors.black87),
+              _buildStatBox(_detailData!.futureCount.toString(), "Tương lai", Colors.black.withValues(alpha: 0.3)),
             ],
           ),
         ],
@@ -330,8 +330,22 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
     required String date,
     required String teacher,
     required String session,
-    required bool isPresent,
+    required String status,
   }) {
+    Color statusColor;
+    IconData statusIcon;
+
+    if (status == "PRESENT") {
+      statusColor = Colors.greenAccent.shade400;
+      statusIcon = Icons.check_circle_outline;
+    } else if (status == "FUTURE") {
+      statusColor = Colors.black.withValues(alpha: 0.3);
+      statusIcon = Icons.schedule;
+    } else {
+      statusColor = Colors.red;
+      statusIcon = Icons.highlight_off;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -347,7 +361,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: isPresent ? Colors.greenAccent.shade400 : Colors.red,
+              color: statusColor,
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -407,8 +421,8 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
           const SizedBox(width: 16),
           // Icon Right
           Icon(
-            isPresent ? Icons.check_circle_outline : Icons.highlight_off,
-            color: isPresent ? Colors.greenAccent.shade400 : Colors.red,
+            statusIcon,
+            color: statusColor,
             size: 32,
           ),
         ],

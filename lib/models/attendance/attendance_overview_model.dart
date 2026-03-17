@@ -2,6 +2,7 @@ class AttendanceOverviewModel {
   final int subjectId;
   final String subjectName;
   final String className;
+  final String academicYear;
   final int presentCount;
   final int absentCount;
   final int totalConducted;
@@ -14,6 +15,7 @@ class AttendanceOverviewModel {
     required this.subjectId,
     required this.subjectName,
     required this.className,
+    required this.academicYear,
     required this.presentCount,
     required this.absentCount,
     required this.totalConducted,
@@ -28,6 +30,7 @@ class AttendanceOverviewModel {
       subjectId: json['subjectId'] ?? 0,
       subjectName: json['subjectName'] ?? '',
       className: json['className'] ?? '',
+      academicYear: json['academicYear'] ?? '',
       presentCount: json['presentCount'] ?? 0,
       absentCount: json['absentCount'] ?? 0,
       totalConducted: json['totalConducted'] ?? 0,

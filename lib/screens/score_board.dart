@@ -2,7 +2,9 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
 import 'package:myfschools/widgets/score_board/score_board.dart';
-import 'package:myfschools/models/academic/score_model.dart';
+import 'package:myfschools/models/academic/score_overview_response.dart';
+import 'package:myfschools/services/score_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScoreBoardScreen extends StatefulWidget {
   const ScoreBoardScreen({super.key});
@@ -12,65 +14,45 @@ class ScoreBoardScreen extends StatefulWidget {
 }
 
 class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
-  // --- DỮ LIỆU MÔ PHỎNG THEO ẢNH ---
-  final List<String> _years = ['2020', '2021', '2022'];
+  final List<String> _years = ['2023-2024', '2024-2025', '2025-2026', '2026-2027'];
   final List<String> _semesters = ['1', '2', 'Cả năm'];
 
-  final List<ScoreModel> _subjects = [
-    ScoreModel(
-      id: 'TOAN1',
-      name: 'Toán Học',
-      icon: Icons.calculate,
-      iconColor: Colors.green,
-      averageScore: 9.5,
-      className: '12A9',
-    ),
-    ScoreModel(
-      id: 'VAN',
-      name: 'Ngữ Văn',
-      icon: Icons.menu_book,
-      iconColor: Colors.blue,
-      averageScore: 8.0,
-      className: '12A9',
-    ),
-    ScoreModel(
-      id: 'ANH',
-      name: 'Tiếng Anh',
-      icon: Icons.language,
-      iconColor: Colors.pink,
-      averageScore: 9.5,
-      className: '12A9',
-    ),
-    ScoreModel(
-      id: 'KHOA',
-      name: 'Khoa Học',
-      icon: Icons.science,
-      iconColor: Colors.green,
-      averageScore: 9.5,
-      className: '12A9',
-    ),
-    ScoreModel(
-      id: 'NHAC',
-      name: 'Âm Nhạc',
-      icon: Icons.library_music,
-      iconColor: Colors.green,
-      averageScore: 9.5,
-      className: '12A9',
-    ),
-    ScoreModel(
-      id: 'TOAN2',
-      name: 'Toán học',
-      icon: Icons.calculate,
-      iconColor: Colors.green,
-      averageScore: 9.5,
-      className: '12A9',
-    ),
-  ];
+  List<ScoreOverviewResponse> _subjects = [];
+  bool _isLoading = true;
 
   // --- BIẾN TRẠNG THÁI ---
-  String _selectedYear = '2020';
-  String _selectedSemester = '1';
+  String _selectedYear = '2025-2026';
+  String _selectedSemester = 'Cả năm';
   final Color primaryColor = const Color(0xFF43A047); // Màu xanh lá chủ đạo
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchScores();
+  }
+
+  Future<void> _fetchScores() async {
+    setState(() => _isLoading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('SELECTED_STUDENT_ID');
+    if (studentId != null) {
+      final result = await ScoreService.getScoreOverview(
+        studentId,
+        _selectedYear,
+        semester: _selectedSemester == 'Cả năm' ? null : _selectedSemester,
+      );
+      if (mounted) {
+        setState(() {
+          _subjects = result;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,13 +86,24 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
 
             // --- PHẦN 2: DANH SÁCH MÔN HỌC ---
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-                itemCount: _subjects.length,
-                itemBuilder: (context, index) {
-                  return SubjectCardWidget(subject: _subjects[index]);
-                },
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: Colors.green))
+                  : _subjects.isEmpty
+                      ? const Center(child: Text('Không có dữ liệu bảng điểm', style: TextStyle(color: Colors.grey)))
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+                          itemCount: _subjects.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == _subjects.length) {
+                               return const SizedBox(height: 100); // padding for bottom nav bar
+                            }
+                            return SubjectCardWidget(
+                              subject: _subjects[index],
+                              academicYear: _selectedYear,
+                              semester: _selectedSemester == 'Cả năm' ? null : _selectedSemester,
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -143,6 +136,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
               primaryColor: primaryColor,
               onChanged: (val) {
                 setState(() => _selectedYear = val!);
+                _fetchScores();
               },
             ),
           ),
@@ -156,6 +150,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
               primaryColor: primaryColor,
               onChanged: (val) {
                 setState(() => _selectedSemester = val!);
+                _fetchScores();
               },
             ),
           ),
