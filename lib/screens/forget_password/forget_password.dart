@@ -7,6 +7,7 @@ import 'package:myfschools/widgets/copyright_footer.dart';
 import 'package:myfschools/widgets/custom_label_field.dart';
 import 'package:myfschools/widgets/login_signup/form_header.dart';
 import 'package:myfschools/widgets/primary_button.dart';
+import 'package:myfschools/services/auth_service.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -18,6 +19,53 @@ class ForgetPasswordScreen extends StatefulWidget {
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final _keyForm = GlobalKey<FormState>();
+
+  bool _isLoading = false;
+
+  void _handleRequestResetPassword() async {
+    if (_keyForm.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final String phone = _phoneController.text.trim();
+      final result = await AuthService.requestResetPassword(phone);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (result['success']) {
+        // Show success snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        // Navigate to OTP screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPScreen(phone: phone),
+          ),
+        );
+      } else {
+        // Show error snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Có lỗi xảy ra, vui lòng thử lại!'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +111,10 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                                 if (value == null || value.isEmpty) {
                                   return 'Vui lòng nhập số điện thoại!';
                                 }
+                                final phoneRegex = RegExp(r'^(0|\+84|84)[35789]\d{8}$');
+                                if (!phoneRegex.hasMatch(value)) {
+                                  return 'Số điện thoại không đúng định dạng!';
+                                }
                                 return null;
                               },
                             ),
@@ -70,19 +122,12 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                             const SizedBox(height: 40),
 
                             /// Forget Password Request Button
-                            PrimaryButton(
-                              text: TTexts.requestForgetPassword,
-                              onPressed: () {
-                                if (_keyForm.currentState!.validate()) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const OTPScreen(),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
+                            _isLoading 
+                                ? const Center(child: CircularProgressIndicator()) 
+                                : PrimaryButton(
+                                    text: TTexts.requestForgetPassword,
+                                    onPressed: _handleRequestResetPassword,
+                                  ),
 
                             const SizedBox(height: 10),
 

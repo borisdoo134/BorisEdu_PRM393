@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:myfschools/screens/forget_password/change_password.dart';
 import 'package:myfschools/screens/login.dart';
+import 'package:myfschools/services/auth_service.dart';
 import 'package:myfschools/utils/constants/t_texts.dart';
 import 'package:myfschools/widgets/change_password/back_to_login.dart';
 import 'package:myfschools/widgets/copyright_footer.dart'; // Widget bản quyền (bạn tạo ở bước trước)
@@ -11,7 +12,9 @@ import 'package:myfschools/widgets/primary_button.dart';
 import 'package:pinput/pinput.dart';
 
 class OTPScreen extends StatefulWidget {
-  const OTPScreen({super.key});
+  final String phone;
+
+  const OTPScreen({super.key, required this.phone});
 
   @override
   State<OTPScreen> createState() => _OTPScreenState();
@@ -21,6 +24,7 @@ class _OTPScreenState extends State<OTPScreen> {
   int _secondsRemaining = 30;
   Timer? _timer;
   bool _canResend = false;
+  bool _isResending = false;
   final TextEditingController _pinController = TextEditingController();
   final _keyForm = GlobalKey<FormState>();
   bool _hasError = false;
@@ -173,10 +177,31 @@ class _OTPScreenState extends State<OTPScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           TextButton(
-                            onPressed: _canResend
-                                ? () {
-                                    debugPrint("Đã gửi lại mã!");
-                                    startTimer();
+                            onPressed: _canResend && !_isResending
+                                ? () async {
+                                    setState(() => _isResending = true);
+
+                                    final result = await AuthService.requestResetPassword(widget.phone);
+
+                                    if (!context.mounted) return;
+                                    setState(() => _isResending = false);
+
+                                    if (result['success'] == true) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(result['message'] ?? 'Đã gửi lại mã OTP!'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                      startTimer();
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(result['message'] ?? 'Gửi lại mã thất bại!'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
                                   }
                                 : null,
                             child: Text(
@@ -204,20 +229,43 @@ class _OTPScreenState extends State<OTPScreen> {
                       // Button Verify
                       PrimaryButton(
                         text: TTexts.verifyOtp,
-                        onPressed: () {
+                        onPressed: () async {
                           final pin = _pinController.text;
 
                           if (_keyForm.currentState!.validate()) {
                             setState(() => _hasError = false);
                             debugPrint('Mã OTP là: $pin');
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ChangePasswordScreen(),
-                              ),
-                            );
+                            final result = await AuthService.checkOtp(pin);
+
+                            if (result['success'] == true) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result['message'] ?? 'Kiểm tra OTP thành công!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChangePasswordScreen(otpCode: pin),
+                                ),
+                              );
+                            } else {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result['message'] ?? 'Mã OTP không hợp lệ!'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              setState(() {
+                                _hasError = true;
+                              });
+                            }
                           } else {
                             setState(() {
                               _hasError = true;

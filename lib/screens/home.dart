@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:myfschools/screens/attendance_report/attendence_report.dart';
 import 'package:myfschools/screens/exam_schedule.dart';
 import 'package:myfschools/screens/fee.dart';
-import 'package:myfschools/screens/leave_application.dart';
+import 'package:myfschools/screens/leave_request_overview.dart';
 import 'package:myfschools/screens/score_board.dart';
 import 'package:myfschools/screens/weekly_timetable.dart';
 import 'package:myfschools/widgets/bottom_bar.dart';
@@ -11,6 +11,7 @@ import 'package:myfschools/widgets/home/feature_new_section.dart';
 import 'package:myfschools/widgets/home/home_header.dart';
 import 'package:myfschools/widgets/home/home_menu_card.dart';
 import 'package:myfschools/widgets/keep_alive_wrapper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,8 +23,24 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _controller = NotchBottomBarController(index: 2);
   final _pageController = PageController(initialPage: 2);
+  String _userRole = "Phụ huynh";
 
   int maxCount = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _userRole = prefs.getString('USER_ROLE') ?? "Phụ huynh";
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -127,19 +144,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    MenuCard(
-                      icon: Icons.edit_document,
-                      label: "Xin nghỉ phép",
-                      color: Colors.red,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LeaveApplicationScreen(),
-                          ),
-                        );
-                      },
-                    ),
+                    if (_userRole != "Học sinh")
+                      MenuCard(
+                        icon: Icons.edit_document,
+                        label: "Xin nghỉ phép",
+                        color: Colors.red,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LeaveRequestOverviewScreen(),
+                            ),
+                          );
+                        },
+                      ),
                     MenuCard(
                       icon: Icons.assessment_rounded,
                       label: "Lịch thi",

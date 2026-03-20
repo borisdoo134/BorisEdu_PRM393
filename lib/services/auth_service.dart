@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // Import thư viện
 
@@ -7,8 +8,13 @@ class AuthService {
   static String? userName;
   static String? userPhone;
 
+  /// Trả về host phù hợp với môi trường:
+  /// - Flutter Web (browser): dùng localhost
+  /// - Android Emulator: dùng 10.0.2.2 (alias localhost của máy host)
+  static String get _host => kIsWeb ? 'localhost' : '10.0.2.2';
+
   static Future<bool> loginUser(String phone, String password) async {
-    final String apiUrl = 'http://10.0.2.2:8386/api/v1/auth/login';
+    final String apiUrl = 'http://$_host:8386/api/v1/auth/login';
 
     try {
       final response = await http.post(
@@ -95,6 +101,108 @@ class AuthService {
     return prefs.getString(
       'ACCESS_TOKEN',
     ); // Trả về token hoặc null nếu chưa đăng nhập
+  }
+
+  // Hàm yêu cầu cấp lại mật khẩu
+  static Future<Map<String, dynamic>> requestResetPassword(String phone) async {
+    // Chú ý: Đường dẫn API có thể là /api/v1/users/request-reset-password hoặc /api/v1/users/request-reset-password tùy thuộc vào backend
+    final String apiUrl = 'http://$_host:8386/api/v1/users/request-reset-password';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, */*',
+        },
+        body: jsonEncode({'phone': phone}),
+      );
+
+      final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200 && responseBody['status'] == 200) {
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Thành công',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseBody['message'] ?? responseBody['errorMessage'] ?? 'Có lỗi xảy ra',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Không thể kết nối lấy máy chủ: $e',
+      };
+    }
+  }
+
+  // Hàm kiểm tra mã OTP
+  static Future<Map<String, dynamic>> checkOtp(String code) async {
+    final String apiUrl = 'http://$_host:8386/api/v1/otp/$code';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, */*',
+        },
+      );
+
+      final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200 && responseBody['status'] == 200 && responseBody['data'] == true) {
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Thành công',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseBody['message'] ?? responseBody['errorMessage'] ?? 'Có lỗi xảy ra',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Không thể kết nối lấy máy chủ: $e',
+      };
+    }
+  }
+
+  // Hàm đặt lại mật khẩu mới
+  static Future<Map<String, dynamic>> resetPassword(String code, String password) async {
+    final String apiUrl = 'http://$_host:8386/api/v1/users/reset-password';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, */*',
+        },
+        body: jsonEncode({'code': code, 'password': password}),
+      );
+
+      final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200 && responseBody['status'] == 200) {
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Đổi mật khẩu thành công!',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseBody['message'] ?? responseBody['errorMessage'] ?? 'Có lỗi xảy ra',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Không thể kết nối tới máy chủ: $e',
+      };
+    }
   }
 
   // Hàm đăng xuất: Gọi API (GET) và Xóa dữ liệu
