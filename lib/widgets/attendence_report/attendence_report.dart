@@ -5,6 +5,7 @@ class SubjectAttendanceCard extends StatelessWidget {
   final String className;
   final int present;
   final int total;
+  final int percentage;
   final bool bannedFromExam;
 
   const SubjectAttendanceCard({
@@ -13,14 +14,14 @@ class SubjectAttendanceCard extends StatelessWidget {
     required this.className,
     required this.present,
     required this.total,
+    required this.percentage,
     this.bannedFromExam = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Calculate percentage
-    double percentage = total > 0 ? present / total : 0;
-    int percentageInt = (percentage * 100).round();
+    int percentageInt = percentage;
+    double progressValue = percentageInt / 100.0;
     
     Color presentColor = bannedFromExam ? const Color(0xFFF27123) : Colors.greenAccent.shade400;
     Color absentColor = bannedFromExam ? const Color(0xFFE8EDF2) : Colors.orange;
@@ -54,7 +55,7 @@ class SubjectAttendanceCard extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       CircularProgressIndicator(
-                        value: percentage,
+                        value: progressValue,
                         backgroundColor: absentColor,
                         color: presentColor,
                         strokeWidth: 8,

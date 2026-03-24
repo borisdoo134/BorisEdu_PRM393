@@ -257,7 +257,7 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
                               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
                             ),
                             TextSpan(
-                              text: "/ ${_detailData!.presentCount + _detailData!.absentCount} Tiết",
+                              text: "/ ${_detailData!.presentCount + _detailData!.excusedAbsentCount + _detailData!.unexcusedAbsentCount} Tiết",
                               style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                             ),
                           ],
@@ -274,8 +274,9 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatBox(_detailData!.presentCount.toString(), "Có mặt", Colors.green),
-              _buildStatBox(_detailData!.absentCount.toString(), "Vắng mặt", Colors.red),
+              _buildStatBox(_detailData!.presentCount.toString(), "Có mặt", Colors.greenAccent.shade400),
+              _buildStatBox(_detailData!.excusedAbsentCount.toString(), "Có phép", Colors.orange),
+              _buildStatBox(_detailData!.unexcusedAbsentCount.toString(), "Không phép", Colors.red),
               _buildStatBox(_detailData!.futureCount.toString(), "Tương lai", Colors.black.withValues(alpha: 0.3)),
             ],
           ),
@@ -314,8 +315,9 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
             const SizedBox(height: 8),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: Colors.grey.shade500,
                 fontWeight: FontWeight.w500,
               ),
@@ -341,6 +343,9 @@ class _AttendenceDetailScreenState extends State<AttendenceDetailScreen> {
     } else if (status == "FUTURE") {
       statusColor = Colors.black.withValues(alpha: 0.3);
       statusIcon = Icons.schedule;
+    } else if (status == "EXCUSED_ABSENT") {
+      statusColor = Colors.orange;
+      statusIcon = Icons.info_outline;
     } else {
       statusColor = Colors.red;
       statusIcon = Icons.highlight_off;

@@ -76,6 +76,7 @@ class _AttendenceReportScreenState extends State<AttendenceReportScreen> {
         className: model.className,
         present: model.presentCount,
         total: model.totalConducted,
+        percentage: model.percentage,
         bannedFromExam: model.bannedFromExam,
       ),
     );

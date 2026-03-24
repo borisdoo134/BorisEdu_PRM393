@@ -64,27 +64,6 @@ class _LeaveRequestOverviewScreenState extends State<LeaveRequestOverviewScreen>
     return DateFormat('dd/MM/yyyy').format(date);
   }
 
-  Widget _buildStatusBadge(String status) {
-    if (status == 'PENDING') {
-      return Text('Chờ duyệt', style: TextStyle(color: Colors.grey[700]));
-    } else if (status == 'APPROVED') {
-      return Text('Đã duyệt', style: TextStyle(color: Colors.grey[700]));
-    } else if (status == 'REJECTED') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFEBEE),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          'Từ chối',
-          style: TextStyle(color: Colors.red[400], fontSize: 13, fontWeight: FontWeight.w500),
-        ),
-      );
-    }
-    return Text(status);
-  }
-
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = const Color(0xFF43A047);
@@ -231,8 +210,6 @@ class _LeaveRequestOverviewScreenState extends State<LeaveRequestOverviewScreen>
                                 DataColumn(label: Text('TỪ NGÀY')),
                                 DataColumn(label: Text('ĐẾN NGÀY')),
                                 DataColumn(label: Text('LÝ DO NGHỈ')),
-                                DataColumn(label: Text('TRẠNG THÁI')),
-                                DataColumn(label: Text('GHI CHÚ')),
                               ],
                               rows: _requests.map((req) {
                                 final int daysCount = req.toDate.difference(req.fromDate).inDays + 1;
@@ -292,15 +269,6 @@ class _LeaveRequestOverviewScreenState extends State<LeaveRequestOverviewScreen>
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                    DataCell(_buildStatusBadge(req.status)),
-                                    DataCell(
-                                      Text(
-                                        req.teacherNote != null && req.teacherNote!.isNotEmpty
-                                            ? req.teacherNote!
-                                            : "-",
-                                        style: TextStyle(color: Colors.grey[600]),
                                       ),
                                     ),
                                   ],
