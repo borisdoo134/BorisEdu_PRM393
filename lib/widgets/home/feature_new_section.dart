@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:myfschools/models/event/event_slider_model.dart';
+import 'package:myfschools/screens/event_detail.dart';
+import 'package:myfschools/services/system_event_service.dart';
 
 class FeaturedNewsSection extends StatefulWidget {
   const FeaturedNewsSection({super.key});
@@ -9,11 +12,8 @@ class FeaturedNewsSection extends StatefulWidget {
 }
 
 class _FeaturedNewsSectionState extends State<FeaturedNewsSection> {
-  final List<String> _demoImages = const [
-    'assets/feature_news/news_1.png',
-    'assets/feature_news/news_2.png',
-    'assets/feature_news/news_1.png',
-  ];
+  List<EventSliderModel> _sliders = [];
+  bool _isLoading = true;
 
   late PageController _pageController;
   Timer? _timer;
@@ -27,8 +27,27 @@ class _FeaturedNewsSectionState extends State<FeaturedNewsSection> {
       viewportFraction: 0.85, // Tiêu điểm ở giữa, nhìn thấy một phần 2 thẻ bên cạnh
     );
 
-    // Tự động lướt sang trái (next page) mỗi 3s
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+    _fetchSliders();
+  }
+
+  Future<void> _fetchSliders() async {
+    final result = await SystemEventService.getSliders();
+    if (mounted) {
+      setState(() {
+        _sliders = result;
+        _isLoading = false;
+      });
+
+      if (_sliders.isNotEmpty) {
+        _startAutoSlide();
+      }
+    }
+  }
+
+  void _startAutoSlide() {
+    // Tự động lướt sang trái (next page) mỗi 4s
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (mounted && _pageController.hasClients) {
         _currentPage++;
         _pageController.animateToPage(
@@ -87,68 +106,104 @@ class _FeaturedNewsSectionState extends State<FeaturedNewsSection> {
         ),
 
         const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (int index) {
-              _currentPage = index;
-            },
-            itemBuilder: (context, index) {
-              return AnimatedBuilder(
-                animation: _pageController,
-                builder: (context, child) {
-                  double value = 1.0;
-                  if (_pageController.position.haveDimensions) {
-                    value = _pageController.page! - index;
-                    // Tính toán scale dựa trên khoảng cách tới trang hiện tại
-                    value = (1 - (value.abs() * 0.15)).clamp(0.0, 1.0);
-                  } else {
-                    value = index == _currentPage ? 1.0 : 0.85;
-                  }
-                  return Center(
-                    child: SizedBox(
-                      height: Curves.easeOut.transform(value) * 180,
-                      width: double.infinity,
-                      child: child,
+        _isLoading
+            ? const SizedBox(
+                height: 180,
+                child: Center(child: CircularProgressIndicator(color: Colors.green)),
+              )
+            : _sliders.isEmpty
+                ? const SizedBox(
+                    height: 180,
+                    child: Center(child: Text("Không có tin nổi bật nào", style: TextStyle(color: Colors.grey))),
+                  )
+                : SizedBox(
+                    height: 180,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (int index) {
+                        _currentPage = index;
+                      },
+                      itemBuilder: (context, index) {
+                        return AnimatedBuilder(
+                          animation: _pageController,
+                          builder: (context, child) {
+                            double value = 1.0;
+                            if (_pageController.position.haveDimensions) {
+                              value = _pageController.page! - index;
+                              // Tính toán scale dựa trên khoảng cách tới trang hiện tại
+                              value = (1 - (value.abs() * 0.15)).clamp(0.0, 1.0);
+                            } else {
+                              value = index == _currentPage ? 1.0 : 0.85;
+                            }
+                            return Center(
+                              child: SizedBox(
+                                height: Curves.easeOut.transform(value) * 180,
+                                width: double.infinity,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: _buildNewsCard(_sliders[index % _sliders.length]),
+                        );
+                      },
                     ),
-                  );
-                },
-                child: _buildNewsCard(_demoImages[index % _demoImages.length]),
-              );
-            },
-          ),
-        ),
+                  ),
       ],
     );
   }
 
-  Widget _buildNewsCard(String imagePath) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[300],
-              child: const Center(child: Icon(Icons.error)),
-            );
-          },
+  Widget _buildNewsCard(EventSliderModel event) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(eventId: event.id),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            event.imageUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                color: Colors.grey[200],
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                        : null,
+                    color: Colors.green,
+                  ),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
+
+
