@@ -171,6 +171,42 @@ class AuthService {
     }
   }
 
+  // Hàm đổi mật khẩu (khi đã đăng nhập)
+  static Future<Map<String, dynamic>> changePassword(String oldPassword, String password, String rePassword) async {
+    final String apiUrl = 'http://$_host:8386/api/v1/users/change-password';
+    final String? accessToken = await getAccessToken();
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, */*',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({'oldPassword': oldPassword, 'password': password, 'rePassword': rePassword}),
+      );
+
+      final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200 && responseBody['status'] == 200) {
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Đổi mật khẩu thành công!',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseBody['message'] ?? responseBody['errorMessage'] ?? 'Có lỗi xảy ra',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Không thể kết nối tới máy chủ: $e',
+      };
+    }
+  }
+
   // Hàm đặt lại mật khẩu mới
   static Future<Map<String, dynamic>> resetPassword(String code, String password) async {
     final String apiUrl = 'http://$_host:8386/api/v1/users/reset-password';
