@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myfschools/screens/forget_password/forget_password.dart';
 import 'package:myfschools/screens/home.dart';
 import 'package:myfschools/controllers/auth/auth_controller.dart';
@@ -20,6 +21,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _keyForm = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _rememberPassword = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPhone = prefs.getString('REMEMBER_PHONE');
+    final savedPassword = prefs.getString('REMEMBER_PASSWORD');
+    
+    if (savedPhone != null && savedPassword != null) {
+      if (mounted) {
+        setState(() {
+          _phoneController.text = savedPhone;
+          _passwordController.text = savedPassword;
+          _rememberPassword = true;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +110,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 8),
 
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: _rememberPassword,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _rememberPassword = value ?? false;
+                                        });
+                                      },
+                                      activeColor: Colors.green,
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    const Text("Nhớ mật khẩu"),
+                                  ],
+                                ),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.push(
@@ -137,14 +176,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                             context,
                                           ).hideCurrentSnackBar(); // Ẩn snackbar loading
                                           if (isSuccess) {
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const HomeScreen(),
-                                              ),
-                                            );
-                                          } else {
+                                              final prefs = await SharedPreferences.getInstance();
+                                              if (_rememberPassword) {
+                                                await prefs.setString('REMEMBER_PHONE', _phoneController.text.trim());
+                                                await prefs.setString('REMEMBER_PASSWORD', _passwordController.text);
+                                              } else {
+                                                await prefs.remove('REMEMBER_PHONE');
+                                                await prefs.remove('REMEMBER_PASSWORD');
+                                              }
+
+                                              if (!context.mounted) return;
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const HomeScreen(),
+                                                ),
+                                              );
+                                            } else {
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
